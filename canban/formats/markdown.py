@@ -31,6 +31,16 @@ class Handler(canban.api.Handler):
                 if item['id'] in ids:
                     del items[i]
         new_items = [items_by_id[item_id] for item_id in ids]
+        for title, items in columns:
+            if title == target_column:
+                for item in new_items:
+                    items.append(item)
+                break
+        else:
+            columns.append([target_column, new_items])
+
+        self.dump_markdown(columns, filename)
+        self.dump_js(result='ok')
 
     @staticmethod
     def generate_id(title, label, pos):
@@ -76,13 +86,15 @@ class Handler(canban.api.Handler):
             for title, list_items in data:
                 f.write("# {title}\n\n".format(title=title))
                 for item in list_items:
-                    f.write("- {item}\n".format(item=item))
+                    f.write("- {item}\n".format(item=item['label']))
                 if list_items and not title == last_title:
                     f.write("\n")
 
     def handle(self):
         if self.command == 'getcolumndata':
             self.cmd_getcolumndata()
+        if self.command == 'moveitemstocolumn':
+            self.cmd_moveitemstocolumn()
 
 if __name__ == '__main__':
     if '--doctest' in sys.argv:

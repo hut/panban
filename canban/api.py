@@ -3,6 +3,7 @@ import sys
 
 VALID_COMMANDS = [
     'getcolumndata',
+    'moveitemstocolumn',
 ]
 
 
@@ -27,8 +28,8 @@ class Handler(object):
 
         return command
 
-    def dump_js(self, **kwargs):
-        json.dump(kwargs, sys.stdout)
+    def dump_js(self, arg=None, **kwargs):
+        json.dump(arg or kwargs, sys.stdout)
         sys.stdout.write("\n")
         sys.stdout.flush()
 
