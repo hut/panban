@@ -16,7 +16,7 @@ class Handler(panban.api.Handler):
     def cmd_getcolumndata(self):
         filename = self.json_data['source']
         columns, items = self.load_markdown(filename)
-        self.dump_js(result=columns)
+        return dict(result=columns)
 
     def cmd_moveitemstocolumn(self):
         filename = self.json_data['source']
@@ -40,7 +40,7 @@ class Handler(panban.api.Handler):
             columns.append([target_column, new_items])
 
         self.dump_markdown(columns, filename)
-        self.dump_js(result='ok')
+        return dict(result='ok')
 
     @staticmethod
     def generate_id(title, label, pos):
@@ -51,6 +51,7 @@ class Handler(panban.api.Handler):
         'd458052c5254ae93933b1a5e3e66646cb5f3c5c9560ce420b9699ae3f416469d'
         """
         concatenated = "{}\0{}\0{}".format(title, label, pos)
+        concatenated = concatenated.encode('utf-8')
         return hashlib.sha256(concatenated).hexdigest()
 
     def load_markdown(self, filename):
@@ -92,9 +93,11 @@ class Handler(panban.api.Handler):
 
     def handle(self):
         if self.command == 'getcolumndata':
-            self.cmd_getcolumndata()
+            return self.cmd_getcolumndata()
         if self.command == 'moveitemstocolumn':
-            self.cmd_moveitemstocolumn()
+            return self.cmd_moveitemstocolumn()
+        raise panban.api.InvalidCommandError(self.command)
+
 
 if __name__ == '__main__':
     if '--doctest' in sys.argv:

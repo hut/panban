@@ -8,8 +8,11 @@ VALID_COMMANDS = [
 
 
 class Handler(object):
-    def __init__(self):
-        pass
+    def __init__(self, integrated=False):
+        self.integrated = integrated
+
+    def _reset(self):
+        self.command = None
 
     def handle(self):
         raise NotImplementedError("Please override this method!")
@@ -34,15 +37,24 @@ class Handler(object):
         sys.stdout.flush()
 
     def main(self, data_stream):
+        self._reset()
         try:
             self.json_data = json.load(data_stream)
         except ValueError as e:
             raise InvalidJSONDataError()
 
         self.command = self.validate_data(self.json_data)
-        self.handle()
+        result = self.handle()
+        self.dump_js(result)
+
+    def query(self, query_dict):
+        self._reset()
+        self.json_data = query_dict
+        self.command = self.validate_data(self.json_data)
+        return self.handle()
 
     def main_with_error_handling(self, data_stream):
+        self._reset()
         try:
             error_code = self.main(data_stream)
         except HandlerException as e:

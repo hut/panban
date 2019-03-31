@@ -1,8 +1,31 @@
+from panban.frontends import ALL_FRONTENDS, DEFAULT_FRONTEND
+from panban.formats import ALL_BACKENDS, DEFAULT_BACKEND
+from panban.controller import DatabaseAbstraction
+
 def main():
-    parse_arguments()
+    args = parse_arguments()
+
+    frontend_module = ALL_FRONTENDS[args.frontend]
+    backend_module = ALL_BACKENDS[args.backend]
+
+    backend = backend_module.Handler()
+    controller = DatabaseAbstraction(backend, args.source[0])
+    frontend = frontend_module.Frontend(controller)
+    frontend.main()
 
 def parse_arguments():
     import argparse
+
+    frontend_choices = ', '.join(s + ' (default)' if s == DEFAULT_FRONTEND
+            else s for s in sorted(ALL_FRONTENDS))
+    backend_choices = ', '.join(s + ' (default)' if s == DEFAULT_BACKEND
+            else s for s in sorted(ALL_BACKENDS))
+
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-x', '--long', metavar='N', type=int, default=1, help='foo')
-    parser.add_argument('-d', '--days', nargs='+', default=['a', 'b'], dest='days', type=lambda s: s + "day")
+    parser.add_argument('-f', '--frontend', type=str, default='urwid',
+            help='Which frontend? Current choices: ' + frontend_choices)
+    parser.add_argument('-b', '--backend', type=str, default='markdown', 
+            help='Which database type? Current choices: markdown (default)')
+    parser.add_argument('source', type=str, nargs=1, metavar='DATABASE_SOURCE')
+    args = parser.parse_args()
+    return args
