@@ -7,12 +7,12 @@ import hashlib
 import argparse
 import json
 try:
-    import canban.api
+    import panban.api
 except ImportError:
     sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-    import canban.api
+    import panban.api
 
-class Handler(canban.api.Handler):
+class Handler(panban.api.Handler):
     def cmd_getcolumndata(self):
         filename = self.json_data['source']
         columns, items = self.load_markdown(filename)
@@ -55,7 +55,7 @@ class Handler(canban.api.Handler):
 
     def load_markdown(self, filename):
         if not os.path.exists(filename):
-            raise canban.api.SourceFileDoesNotExist(filename)
+            raise panban.api.SourceFileDoesNotExist(filename)
 
         # TODO: use proper markdown parser
         columns = []
