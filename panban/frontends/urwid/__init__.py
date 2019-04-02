@@ -1,6 +1,8 @@
 import urwid
 import subprocess
 
+from panban.controller import UserFacingException
+
 VIM_KEYS = {
     'h': 'cursor left',
     'l': 'cursor right',
@@ -29,12 +31,12 @@ class UI(object):
     def __init__(self, db):
         self.db = db
 
-        #self.kanban_layout = KanbanLayout(db)
-        self.menu = Menu(self)
-        self.kanban_layout = Menu(self)
+        self.menu = MenuBox(self)
+        self.kanban_layout = KanbanLayout(self)
         self.base = Base(self, db, self.kanban_layout, self.menu)
 
     def activate(self):
+        self.reload()
         self.loop = urwid.MainLoop(self.base, PALETTE)
         self.loop.run()
 
@@ -57,6 +59,11 @@ class UI(object):
         finally:
             self.deactivate()
 
+    def reload(self):
+        self.db.reload()
+        self.kanban_layout.reload()
+        self.menu.reload()
+
 
 class EntryButton(urwid.Button):
     button_left = urwid.Text("-")
@@ -65,7 +72,7 @@ class EntryButton(urwid.Button):
     def __init__(self, ui, entry):
         self.ui = ui
         self.entry = entry
-        super(MenuButton, self).__init__(label)
+        super(EntryButton, self).__init__(entry.label)
         urwid.connect_signal(self, 'click', lambda button: self.ui.system(['vim']))  # TODO
 
     def keypress(self, size, key):
@@ -92,8 +99,7 @@ class Base(urwid.WidgetPlaceholder):
 
     def reload(self):
         self.db.reload()
-        for column in self.content_widget.columns:
-            column.rebuild_listwalker()
+        self.content_widget.reload()
 
     def keypress(self, size, key):
         if key in ('tab', 'q'):
@@ -105,11 +111,11 @@ class Base(urwid.WidgetPlaceholder):
         return super(Base, self).keypress(size, key)  # pylint: disable=not-callable
 
 
-class Menu(urwid.ListBox):
+class MenuBox(urwid.ListBox):
     def __init__(self, ui):
         self.ui = ui
         self.list_walker = urwid.SimpleFocusListWalker([])
-        super(Menu, self).__init__(self.list_walker)
+        super(MenuBox, self).__init__(self.list_walker)
         self.reload()
 
     def reload(self):
@@ -120,5 +126,57 @@ class Menu(urwid.ListBox):
             urwid.connect_signal(button, 'click',
                     lambda button: self.ui.base.flip())
             self.list_walker.append(button)
+        if not focus:  # Avoid starting with the bottom item focused
+            self.list_walker.set_focus(0)
+
+
+class KanbanLayout(urwid.Columns):
+    def __init__(self, ui):
+        self.columns = []
+        self.ui = ui
+        super(KanbanLayout, self).__init__(self.columns, dividechars=1)
+        for key, value in VIM_KEYS.items():
+            self._command_map[key] = value
+
+    def reload(self):
+        try:
+            focus = self.focus_position
+        except IndexError:
+            focus = None
+
+        columnboxes = []
+        for column in self.ui.db.columns:
+            columnbox = ColumnBox(self.ui, column.title)
+            columnbox.reload()
+            columnboxes.append((columnbox, self.options()))
+        self.contents[:] = columnboxes
+
+        if focus is not None and self.content:
+            self.focus_position = focus  # TODO: does this help?
+
+
+class ColumnBox(urwid.ListBox):
+    def __init__(self, ui, title):
+        self.ui = ui
+        self.title = title
+        self.list_walker = urwid.SimpleFocusListWalker([])
+        super(ColumnBox, self).__init__(self.list_walker)
+
+    def reload(self):
+        focus = self.list_walker.focus
+
+        for column in self.ui.db.columns:
+            if column.title == self.title:
+                break
+        else:
+            raise UserFacingException('Column with title %s does not exist' % self.title)
+
+        entrybuttons = []
+        for entry in column.entries:
+            widget = EntryButton(self.ui, entry)
+            entrybuttons.append(widget)
+
+        self.list_walker[:] = entrybuttons
+
         if not focus:  # Avoid starting with the bottom item focused
             self.list_walker.set_focus(0)
