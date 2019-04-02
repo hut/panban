@@ -78,6 +78,7 @@ class EntryButton(urwid.Button):
     def keypress(self, size, key):
         if key == 'X':
             self.entry.delete()
+        return super(EntryButton, self).keypress(size, key)
 
 
 class Base(urwid.WidgetPlaceholder):
@@ -149,10 +150,13 @@ class KanbanLayout(urwid.Columns):
             columnbox = ColumnBox(self.ui, column.title)
             columnbox.reload()
             columnboxes.append((columnbox, self.options()))
-        self.contents[:] = columnboxes
+        self.contents = columnboxes
 
-        if focus is not None and self.content:
-            self.focus_position = focus  # TODO: does this help?
+        if self.contents:
+            if focus is None:
+                self.focus_position = 0
+            else:
+                self.focus_position = focus  # TODO: does this help?
 
 
 class ColumnBox(urwid.ListBox):
@@ -161,6 +165,8 @@ class ColumnBox(urwid.ListBox):
         self.title = title
         self.list_walker = urwid.SimpleFocusListWalker([])
         super(ColumnBox, self).__init__(self.list_walker)
+        for key, value in VIM_KEYS.items():
+            self._command_map[key] = value
 
     def reload(self):
         focus = self.list_walker.focus
@@ -171,12 +177,11 @@ class ColumnBox(urwid.ListBox):
         else:
             raise UserFacingException('Column with title %s does not exist' % self.title)
 
-        entrybuttons = []
+        self.list_walker[:] = []
         for entry in column.entries:
             widget = EntryButton(self.ui, entry)
-            entrybuttons.append(widget)
-
-        self.list_walker[:] = entrybuttons
+            widget = urwid.AttrMap(widget, 'button', 'focus button')
+            self.list_walker.append(widget)
 
         if not focus:  # Avoid starting with the bottom item focused
             self.list_walker.set_focus(0)
