@@ -45,7 +45,6 @@ class Handler(panban.api.Handler):
     def cmd_deleteitems(self):
         filename = self.json_data['source']
         ids = self.json_data['item_ids']
-        target_column = self.json_data['target_column']
         columns, items_by_id = self.load_markdown(filename)
 
         for title, items in columns:
