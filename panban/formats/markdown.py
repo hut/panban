@@ -42,6 +42,21 @@ class Handler(panban.api.Handler):
         self.dump_markdown(columns, filename)
         return dict(result='ok')
 
+    def cmd_deleteitems(self):
+        filename = self.json_data['source']
+        ids = self.json_data['item_ids']
+        target_column = self.json_data['target_column']
+        columns, items_by_id = self.load_markdown(filename)
+
+        for title, items in columns:
+            for i in reversed(range(len(items))):
+                item = items[i]
+                if item['id'] in ids:
+                    del items[i]
+
+        self.dump_markdown(columns, filename)
+        return dict(result='ok')
+
     @staticmethod
     def generate_id(title, label, pos):
         """
@@ -96,6 +111,8 @@ class Handler(panban.api.Handler):
             return self.cmd_getcolumndata()
         if self.command == 'moveitemstocolumn':
             return self.cmd_moveitemstocolumn()
+        if self.command == 'deleteitems':
+            return self.cmd_deleteitems()
         raise panban.api.InvalidCommandError(self.command)
 
 

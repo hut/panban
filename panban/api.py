@@ -4,6 +4,7 @@ import sys
 VALID_COMMANDS = [
     'getcolumndata',
     'moveitemstocolumn',
+    'deleteitems',
 ]
 
 

@@ -10,7 +10,7 @@ def main():
 
     backend = backend_module.Handler()
     controller = DatabaseAbstraction(backend, args.source[0])
-    frontend = frontend_module.Frontend(controller)
+    frontend = frontend_module.UI(controller)
     frontend.main()
 
 def parse_arguments():
