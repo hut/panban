@@ -15,7 +15,7 @@ class DatabaseAbstraction(object):
     def __init__(self, backend_handler, source):
         self.handler = backend_handler
         self.source = source
-        self.columns = []
+        self.tabs = []
 
     def reload(self):
         self.get_columns()
@@ -25,13 +25,13 @@ class DatabaseAbstraction(object):
             'command': 'getcolumndata',
             'source': self.source,
         })
-        columns_data = response['result']
-
-        result = []
-        for column_data in columns_data:
-            result.append(Column.from_json(column_data, self))
-        self.columns = result
-        return result
+        if response['status'] != 'ok':
+            raise UserFacingException('Could not fetch columns.  More info: %s'
+                    % repr(response))
+        self.tabs = tabs = []
+        for tab_data in response['data']:
+            tabs.append(Node.from_json(tab_data, self))
+        return tabs
 
     def command(self, command_string, **parameters):
         query = {'command': command_string, 'source': self.source}
@@ -39,54 +39,42 @@ class DatabaseAbstraction(object):
         return self.handler.query(query)
 
 
-class Column(object):
-    def __init__(self):
-        pass
-
+class Node(object):
     @staticmethod
     def from_json(data, db):
-        # data looks like ['title', [{...}, ...]]
-        # with {...} being the data for of an entry
+        node = Node()
+        node.label = data['label']
+        if not 'id' in data:
+            raise Exception(data)
+        node.id = data['id']
+        node.position = data['pos']
+        node.children = []
+        node.parent = data.get('parent', None)
+        node.db = db
+        node._raw_json = data
 
-        column = Column()
-        column.title = data[0]
-        column.entries = []
-        column.db = db
-        for entry_data in data[1]:
-            entry = Entry.from_json(entry_data, column)
-            column.entries.append(entry)
-        return column
+        for child_data in data['children']:
+            child = Node.from_json(child_data, db)
+            child.parent = node
+            node.children.append(child)
+
+        return node
 
     def __repr__(self):
-        return '<Column "{title}" of [{entries}]>'.format(
-                title=self.title,
+        return '<Node "{0.label}" of [{entries}]>'.format(self,
                 entries=", ".join(repr(entry) for entry in self.entries))
 
-    def _raw_remove_entry(self, entry):
-        if entry in self.entries:
-            self.entries.remove(entry)
-
-
-class Entry(object):
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def from_json(data, column):
-        entry = Entry()
-        entry.label = data['label']
-        entry.id = data['id']
-        entry.column = column
-        entry.db = column.db
-        return entry
-
-    def __repr__(self):
-        return '<Entry "%s">' % self.label
+    def _raw_remove_child(self, child):
+        if child in self.children:
+            self.children.remove(child)
 
     def delete(self):
+        if self.parent is None:
+            raise UserFacingException('Could not delete node, since it has no parent!')
+
         result = self.db.command('deleteitems', item_ids=[self.id])
-        if result['result'] != 'ok':
+        if result['status'] != 'ok':
             raise UserFacingException('Could not delete.  More info: %s' % repr(result))
 
-        self.column._raw_remove_entry(self)
+        self.parent._raw_remove_child(self)
         return True

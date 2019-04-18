@@ -152,6 +152,7 @@ class KanbanLayout(urwid.Columns):
     def __init__(self, ui):
         self.columns = []
         self.ui = ui
+        self.active_tab_nr = 0
         super(KanbanLayout, self).__init__(self.columns, dividechars=1)
         for key, value in VIM_KEYS.items():
             self._command_map[key] = value
@@ -163,8 +164,8 @@ class KanbanLayout(urwid.Columns):
             focus = None
 
         columnboxes = []
-        for column in self.ui.db.columns:
-            columnbox = ColumnBox(self.ui, column.title)
+        for column in self.get_column_nodes():
+            columnbox = ColumnBox(self.ui, column.label)
             columnbox.reload()
             columnboxes.append((columnbox, self.options()))
         self.contents = columnboxes
@@ -175,11 +176,18 @@ class KanbanLayout(urwid.Columns):
             else:
                 self.focus_position = focus  # TODO: does this help?
 
+    def get_column_nodes(self):
+        if self.active_tab_nr < len(self.ui.db.tabs):
+            active_tab = self.ui.db.tabs[self.active_tab_nr]
+            return active_tab.children
+        else:
+            return []
+
 
 class ColumnBox(urwid.ListBox):
-    def __init__(self, ui, title):
+    def __init__(self, ui, label):
         self.ui = ui
-        self.title = title
+        self.label = label
         self.list_walker = urwid.SimpleFocusListWalker([])
         super(ColumnBox, self).__init__(self.list_walker)
         for key, value in VIM_KEYS.items():
@@ -188,17 +196,17 @@ class ColumnBox(urwid.ListBox):
     def reload(self):
         focus = self.list_walker.focus
 
-        for column in self.ui.db.columns:
-            if column.title == self.title:
+        for column in self.ui.kanban_layout.get_column_nodes():
+            if column.label == self.label:
                 break
         else:
-            raise UserFacingException('Column with title %s does not exist' % self.title)
+            raise UserFacingException('Column with label %s does not exist' % self.label)
 
         self.list_walker[:] = []
 
-        self.list_walker.append(urwid.AttrMap(urwid.Text(self.title), 'heading'))
+        self.list_walker.append(urwid.AttrMap(urwid.Text(self.label), 'heading'))
         self.list_walker.append(urwid.Divider())
-        for entry in column.entries:
+        for entry in column.children:
             widget = EntryButton(self.ui, entry)
             widget = urwid.AttrMap(widget, 'button', 'focus button')
             self.list_walker.append(widget)

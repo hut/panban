@@ -6,10 +6,9 @@
 
 # Active
 
-- be in the present
+- edit this file
 
 # Done
 
 - learn to code
 - set a goal
-- write this file

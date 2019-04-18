@@ -66,6 +66,12 @@ class Handler(object):
             return e.exit_code
         return 0
 
+    @staticmethod
+    def dict(**kwargs):
+        result = {'children': []}
+        result.update(kwargs)
+        return result
+
 
 class HandlerException(Exception):
     exit_code = 1
