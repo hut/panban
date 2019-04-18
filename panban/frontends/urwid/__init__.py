@@ -71,6 +71,8 @@ class UI(object):
         self.activate()
         try:
             self.loop.run()
+        except KeyboardInterrupt:
+            pass
         finally:
             self.deactivate()
 
