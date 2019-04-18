@@ -30,24 +30,39 @@ PALETTE = [
 class UI(object):
     def __init__(self, db):
         self.db = db
+        self.loop = None
 
         self.menu = MenuBox(self)
         self.kanban_layout = KanbanLayout(self)
         self.base = Base(self, db, self.kanban_layout, self.menu)
 
+        self._original_urwid_SHOW_CURSOR = urwid.escape.SHOW_CURSOR
+
     def activate(self):
-        self.reload()
-        self.loop = urwid.MainLoop(self.base, PALETTE)
-        self.loop.run()
+        if self.loop is None:
+            # Workaround for hiding cursor, see
+            # https://github.com/urwid/urwid/issues/170
+            urwid.escape.SHOW_CURSOR = ''
+            self.reload()
+            self.loop = urwid.MainLoop(self.base, PALETTE)
+        else:
+            raise Exception("Do not call UI.activate() more than once!")
+
+    def deactivate(self):
+        self.loop.screen.write(self._original_urwid_SHOW_CURSOR)
+        self.loop.stop()
+
+    def reactivate(self):
+        self.base.reload()
+        self.loop.start()
 
     def system(self, command):
-        self.loop.stop()
+        self.deactivate()
         try:
             subprocess.check_call(command)
         except KeyboardInterrupt:
             pass
-        self.base.reload()
-        self.loop.start()
+        self.reactivate()
 
     def get_entries(self):
         return self.db.get_columns()
@@ -55,7 +70,7 @@ class UI(object):
     def main(self):
         self.activate()
         try:
-            pass
+            self.loop.run()
         finally:
             self.deactivate()
 
