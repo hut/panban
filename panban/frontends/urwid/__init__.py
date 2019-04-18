@@ -195,6 +195,9 @@ class ColumnBox(urwid.ListBox):
             raise UserFacingException('Column with title %s does not exist' % self.title)
 
         self.list_walker[:] = []
+
+        self.list_walker.append(urwid.AttrMap(urwid.Text(self.title), 'heading'))
+        self.list_walker.append(urwid.Divider())
         for entry in column.entries:
             widget = EntryButton(self.ui, entry)
             widget = urwid.AttrMap(widget, 'button', 'focus button')
