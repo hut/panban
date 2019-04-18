@@ -43,6 +43,7 @@ class Column(object):
     def __init__(self):
         pass
 
+    @staticmethod
     def from_json(data, db):
         # data looks like ['title', [{...}, ...]]
         # with {...} being the data for of an entry
