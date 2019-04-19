@@ -22,31 +22,28 @@ class Handler(panban.api.Handler):
         filename = self.json_data['source']
         ids = self.json_data['item_ids']
         target_column = self.json_data['target_column']
-        columns, items_by_id = self.load_markdown(filename)
-
-        objects = []
-        for title, items in columns:
-            for i in reversed(range(len(items))):
-                item = items[i]
-                if item['id'] in ids:
-                    del items[i]
-        new_items = [items_by_id[item_id] for item_id in ids]
-        for title, items in columns:
-            if title == target_column:
-                for item in new_items:
-                    items.append(item)
-                break
-        else:
-            columns.append([target_column, new_items])
-
-        self.dump_markdown(columns, filename)
-        return dict(status='ok')
-
-    def cmd_deleteitems(self):
-        filename = self.json_data['source']
-        ids = self.json_data['item_ids']
         tags, items_by_id = self.load_markdown(filename)
 
+        self._delete_item_ids_from_json(tags, ids)
+        new_items = [items_by_id[item_id] for item_id in ids]
+        success = False
+        for tag in tags:
+            for column in tag['children']:
+                if column['id'] == target_column:
+                    column['children'].extend(new_items)
+                    success = True
+                    break
+            if success:
+                break
+        if not success:
+            raise panban.api.UserFacingException(
+                    "Column with the ID %s not found. %s" % (target_column))
+
+        self.dump_markdown(tags, filename)
+        return dict(status='ok')
+
+    @staticmethod
+    def _delete_item_ids_from_json(json, item_ids):
         def recursively_delete(node, ids):
             children = node['children']
             for i in reversed(range(len(children))):
@@ -56,8 +53,19 @@ class Handler(panban.api.Handler):
                 if child['id'] in ids:
                     del children[i]
 
-        for tag in tags:
-            recursively_delete(tag, ids)
+        for node in json:
+            recursively_delete(node, item_ids)
+
+    def cmd_deleteitems(self):
+        filename = self.json_data['source']
+        ids = self.json_data['item_ids']
+        tags, items_by_id = self.load_markdown(filename)
+
+        self._delete_item_ids_from_json(tags, ids)
+
+        for item_id in ids:
+            if item_id in items_by_id:
+                del items_by_id[item_id]
 
         self.dump_markdown(tags, filename)
         return dict(status='ok')

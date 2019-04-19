@@ -6,9 +6,7 @@ manipulate the locally cached data representation, and at the same time,
 synchronize the data on the server.
 """
 
-
-class UserFacingException(Exception):
-    pass
+from panban.api import UserFacingException
 
 
 class DatabaseAbstraction(object):

@@ -1,7 +1,7 @@
 import urwid
 import subprocess
 
-from panban.controller import UserFacingException
+from panban.api import UserFacingException
 
 VIM_KEYS = {
     'h': 'cursor left',

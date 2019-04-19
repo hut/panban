@@ -101,3 +101,7 @@ class InvalidCommandError(HandlerException):
 class SourceFileDoesNotExist(HandlerException):
     exit_code = 6
     message = 'Source file does not exist: `{}`'
+
+
+class UserFacingException(Exception):
+    pass
