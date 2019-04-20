@@ -24,6 +24,7 @@ class Handler(panban.api.Handler):
         target_column = self.json_data['target_column']
         tags, items_by_id = self.load_markdown(filename)
 
+        self.db.json_api.delete_item_ids(tags, ids)
         self._delete_item_ids_from_json(tags, ids)
         new_items = [items_by_id[item_id] for item_id in ids]
         success = False
