@@ -6,6 +6,8 @@ manipulate the locally cached data representation, and at the same time,
 synchronize the data on the server.
 """
 
+from panban import json_api
+from panban.json_api import exceptions
 from panban.api import UserFacingException
 
 
@@ -14,16 +16,16 @@ class DatabaseAbstraction(object):
         self.handler = backend_handler
         self.source = source
         self.tabs = []
+        self.json_api_version = None
+        self.json_api = None
 
     def reload(self):
         self.get_columns()
 
     def get_columns(self):
-        response = self.handler.query({
-            'command': 'getcolumndata',
-            'source': self.source,
-        })
-        if response['status'] != 'ok':
+        # TODO: This should be a function of handler
+        response = self.query({'command': 'getcolumndata'})
+        if response['status'] != 'ok':  # TODO: use api
             raise UserFacingException('Could not fetch columns.  More info: %s'
                     % repr(response))
         self.tabs = tabs = []
@@ -31,11 +33,38 @@ class DatabaseAbstraction(object):
             tabs.append(Node.from_json(tab_data, self))
         return tabs
 
-    def command(self, command_string, **parameters):
-        query = {'command': command_string, 'source': self.source}
-        query.update(parameters)
-        return self.handler.query(query)
+    def query(self, query_dict):
+        if self.json_api_version is None:
+            json_api_version = json_api.HIGHEST_VERSION
+        else:
+            json_api_version = self.json_api_version
 
+        query_dict['source'] = self.source  # TODO: use api
+
+        # JSON API version negotiation
+        query_dict['version'] = json_api_version  # TODO: use api
+        try:
+            response = self.handler.query(query_dict)
+        except exceptions.JSONAPIVersionUnsupportedByServer as e:
+            for v in reversed(json_api.AVAILABLE_VERSIONS):
+                if v in server_versions:
+                    json_api_version = v
+                    break
+            else:
+                raise exceptions.NoCommonJSONAPIVersions(server_versions)
+            query_dict['version'] = json_api_version  # TODO: use api
+            try:
+                # Try again with negotiated JSON API version
+                response = self.handler.query(query_dict)
+            except exceptions.JSONAPIVersionUnsupportedByServer:
+                # The backend lied about the supported versions!
+                raise exceptions.JSONAPIVersionNegotiationFailed()
+
+        if self.json_api_version is None:
+            self.json_api_version = json_api_version
+        self.json_api = json_api.get_api_version(self.json_api_version)
+
+        return response
 
 class Node(object):
     @staticmethod

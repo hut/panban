@@ -6,24 +6,24 @@ import time
 import hashlib
 import argparse
 import json
-try:
-    import panban.api
-except ImportError:
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-    import panban.api
+import panban.api
+import panban.json_api.eternal
+from panban.json_api.eternal import PortableResponse
 
 class Handler(panban.api.Handler):
-    def cmd_getcolumndata(self):
-        filename = self.json_data['source']
+    def cmd_getcolumndata(self, query):
+        filename = query['source']
         data, items_by_id = self.load_markdown(filename)
-        return dict(status='ok', data=data)
+        return PortableResponse(version=self.json_api.VERSION, status='ok', data=data)
 
-    def cmd_moveitemstocolumn(self):
+    def cmd_moveitemstocolumn(self, query):
+        # TODO: rewrite to use api
         filename = self.json_data['source']
         ids = self.json_data['item_ids']
         target_column = self.json_data['target_column']
         tags, items_by_id = self.load_markdown(filename)
 
+        self.db.json_api.delete_item_ids(tags, ids)
         self._delete_item_ids_from_json(tags, ids)
         new_items = [items_by_id[item_id] for item_id in ids]
         success = False
@@ -40,10 +40,11 @@ class Handler(panban.api.Handler):
                     "Column with the ID %s not found. %s" % (target_column))
 
         self.dump_markdown(tags, filename)
-        return dict(status='ok')
+        return PortableResponse(version=self.json_api.VERSION, status='ok')
 
     @staticmethod
     def _delete_item_ids_from_json(json, item_ids):
+        # TODO: rewrite to use api
         def recursively_delete(node, ids):
             children = node['children']
             for i in reversed(range(len(children))):
@@ -56,7 +57,8 @@ class Handler(panban.api.Handler):
         for node in json:
             recursively_delete(node, item_ids)
 
-    def cmd_deleteitems(self):
+    def cmd_deleteitems(self, query):
+        # TODO: rewrite to use api
         filename = self.json_data['source']
         ids = self.json_data['item_ids']
         tags, items_by_id = self.load_markdown(filename)
@@ -68,10 +70,11 @@ class Handler(panban.api.Handler):
                 del items_by_id[item_id]
 
         self.dump_markdown(tags, filename)
-        return dict(status='ok')
+        return PortableResponse(version=self.json_api.VERSION, status='ok')
 
     @staticmethod
     def generate_id(parent_id, label, pos):
+        # TODO: rewrite to use api
         """
         >>> Handler.generate_id("Todo", "dry laundry", 12)
         '647c0d6d35c0090e34b1bc6229086cf8dfd2bd9b1ca177a19df154b5d0c1a6ff'
@@ -84,6 +87,7 @@ class Handler(panban.api.Handler):
 
     @staticmethod
     def dict(**kwargs):
+        # TODO: rewrite to use api
         if not 'label' in kwargs:
             raise ValueError("Parameter to markdown Handler.dict() needs to "
                     "have the key 'label'!")
@@ -97,6 +101,7 @@ class Handler(panban.api.Handler):
         return result
 
     def load_markdown(self, filename):
+        # TODO: rewrite to use api
         """
         >>> h = Handler()
         >>> data, nodes_by_id = h.load_markdown("test/markdown.md")
@@ -137,6 +142,7 @@ class Handler(panban.api.Handler):
         return tabs, nodes_by_id
 
     def dump_markdown(self, data, filename):
+        # TODO: rewrite to use api
         columns = data[0]['children']
         with open(filename, 'w') as f:
             last_title = columns[-1]['label'] if columns else None
@@ -147,14 +153,17 @@ class Handler(panban.api.Handler):
                 if column['children'] and not column['label'] == last_title:
                     f.write("\n")
 
-    def handle(self):
-        if self.command == 'getcolumndata':
-            return self.cmd_getcolumndata()
-        if self.command == 'moveitemstocolumn':
-            return self.cmd_moveitemstocolumn()
-        if self.command == 'deleteitems':
-            return self.cmd_deleteitems()
-        raise panban.api.InvalidCommandError(self.command)
+    def handle(self, query):
+        command = query['command']  # TODO: use api
+        if command == 'getcolumndata':
+            response = self.cmd_getcolumndata(query)
+        elif command == 'moveitemstocolumn':
+            response = self.cmd_moveitemstocolumn(query)
+        elif command == 'deleteitems':
+            response = self.cmd_deleteitems(query)
+        else:
+            raise panban.api.InvalidCommandError(command)
+        return response.to_json()
 
 
 if __name__ == '__main__':
