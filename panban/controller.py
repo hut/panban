@@ -19,6 +19,7 @@ class DatabaseAbstraction(object):
         self.source = source
         self.root_node_ids = []
         self.nodes_by_id = {}
+        self.features = []
         self.json_api_version = None
         self.json_api = None
         self.last_modification = 0
@@ -86,7 +87,27 @@ class DatabaseAbstraction(object):
             self.json_api_version = json_api_version
         self.json_api = json_api.get_api_version(self.json_api_version)
 
-        return PortableResponse.from_json(self.json_api, response)
+        response = PortableResponse.from_json(self.json_api, response)
+        if response.features:
+            self.features = response.features
+        return response
+
+    def _change_id_of_node(self, old_id, new_id):
+        node = self.nodes_by_id[old_id]
+
+        # Update ID of node
+        node.id = new_id
+
+        # Update "nodes_by_id"
+        del self.nodes_by_id[old_id]
+        self.nodes_by_id[new_id] = node
+
+        # Update parent's children
+        if node.parent:
+            parent = self.nodes_by_id[node.parent]
+            for i in range(len(parent.children)):
+                if parent.children[i] == old_id:
+                    parent.children[i] = new_id
 
 
 class Node(object):
@@ -177,10 +198,15 @@ class Node(object):
             parent = self.db.nodes_by_id[self.parent]
             while self.id in parent.children:
                 parent.children.remove(self.id)
-        if column_id in self.db.nodes_by_id:
-            target = self.db.nodes_by_id[column_id]
-            target.children.append(self.id)
+        target = self.db.nodes_by_id[column_id]
+        self.pos = len(target.children)
+        target.children.append(self.id)
         self.parent = column_id
+
+        if 'autogenerate_node_ids' in self.db.features:
+            old_id = self.id
+            self.id = self.db.json_api.generate_node_id(self, debug=True)
+            self.db._change_id_of_node(old_id, self.id)
 
         self.db.last_modification = time.time()
         return True

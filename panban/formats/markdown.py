@@ -10,11 +10,22 @@ import panban.json_api.eternal
 from panban.json_api.eternal import PortableResponse, PortableNode
 
 class Handler(panban.api.Handler):
+    def response(self, data=None, status=None):
+        if status is None:
+            status = PortableResponse.STATUS_OK
+
+        response = PortableResponse(
+            version=self.json_api.VERSION,
+            status=status,
+            data=data,
+            features=['autogenerate_node_ids'],
+        )
+        return response
+
     def cmd_getcolumndata(self, query):
         filename = query.source
         items_by_id = self.load_markdown(filename)
-        return PortableResponse(version=self.json_api.VERSION,
-                status=PortableResponse.STATUS_OK, data=items_by_id)
+        return self.response(items_by_id)
 
     def cmd_moveitemstocolumn(self, query):
         filename = query.source
@@ -25,8 +36,7 @@ class Handler(panban.api.Handler):
         self.json_api.move_node_ids_to_column(nodes, ids, target_column)
 
         self.dump_markdown(nodes, filename)
-        return PortableResponse(version=self.json_api.VERSION,
-                status=PortableResponse.STATUS_OK)
+        return self.response()
 
     def cmd_deleteitems(self, query):
         filename = query.source
@@ -36,8 +46,7 @@ class Handler(panban.api.Handler):
         self.json_api.delete_node_ids(nodes, ids)
 
         self.dump_markdown(nodes, filename)
-        return PortableResponse(version=self.json_api.VERSION,
-                status=PortableResponse.STATUS_OK)
+        return self.response()
 
     def load_markdown(self, filename):
         """
@@ -97,7 +106,7 @@ class Handler(panban.api.Handler):
         pnode = PortableNode()
         pnode.label = label
         pnode.parent = parent_id
-        pnode.attrs['pos'] = pos
+        pnode.pos = pos
         pnode.id = self.json_api.generate_node_id(pnode)
         return pnode
 

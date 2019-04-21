@@ -99,7 +99,8 @@ class EntryButton(urwid.Button):
     def __init__(self, ui, entry):
         self.ui = ui
         self.entry = entry
-        super(EntryButton, self).__init__(entry.label)
+        label = "%s <%s>" % (entry.label, entry.id[:8])
+        super(EntryButton, self).__init__(label)
         urwid.connect_signal(self, 'click', lambda button: self.ui.system(['vim']))  # TODO
 
     def keypress(self, size, key):
@@ -221,7 +222,8 @@ class ColumnBox(urwid.ListBox):
 
         self.list_walker[:] = []
 
-        self.list_walker.append(urwid.AttrMap(urwid.Text(self.label), 'heading'))
+        label = "%s <%s>" % (self.label, column.id[:8])
+        self.list_walker.append(urwid.AttrMap(urwid.Text(label), 'heading'))
         self.list_walker.append(urwid.Divider())
         for entry in column.getChildrenNodes():
             widget = EntryButton(self.ui, entry)

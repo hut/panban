@@ -13,6 +13,13 @@ VALID_COMMANDS = [
 ]
 
 VALID_FEATURES = [
+    # The feature "autogenerate_node_ids" updates the IDs of nodes by applying
+    # json_api.generate_node_id whenever a node changes, to solve the problem
+    # that some databases have no IDs for their nodes, e.g. plain markdown or
+    # org mode files.  In order to address the node, we construct an ID by
+    # hashing its data, but when the data changes, we need to update that ID.
+    # A better solution might be if the Backend sends a mapping of old IDs to
+    # new IDs in the response to the manipulation request.
     'autogenerate_node_ids',
 ]
 
@@ -28,7 +35,7 @@ class JSONEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-def generate_node_id(node):
+def generate_node_id(node, debug=False):
     """
     >>> node = decode_node(dict(parent="Todo", label="dry laundry", pos=12))
     >>> generate_node_id(node)
@@ -42,6 +49,8 @@ def generate_node_id(node):
         node.label,
         str(node.pos),
     )
+    #if debug or node.label == 'clean dirty things':
+        #raise Exception(repr(keys))
     concatenated = "\0".join(keys).encode('utf-8')
     return hashlib.sha256(concatenated).hexdigest()
 
@@ -101,7 +110,7 @@ def decode_response(json_data):
     version = json_data['version']
     features = json_data.get('features', [])
     data = json_data.get('data', None)
-    response = eternal.PortableResponse(version, status, data)
+    response = eternal.PortableResponse(version, status, features, data)
     return response
 
 def validate_request(command):
