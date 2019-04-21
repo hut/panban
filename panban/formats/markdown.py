@@ -5,16 +5,16 @@ import re
 import time
 import hashlib
 import argparse
-import json
 import panban.api
 import panban.json_api.eternal
-from panban.json_api.eternal import PortableResponse
+from panban.json_api.eternal import PortableResponse, PortableNode
 
 class Handler(panban.api.Handler):
     def cmd_getcolumndata(self, query):
         filename = query['source']
-        data, items_by_id = self.load_markdown(filename)
-        return PortableResponse(version=self.json_api.VERSION, status='ok', data=data)
+        items_by_id = self.load_markdown(filename)
+        return PortableResponse(version=self.json_api.VERSION,
+                status=PortableResponse.STATUS_OK, data=items_by_id)
 
     def cmd_moveitemstocolumn(self, query):
         # TODO: rewrite to use api
@@ -40,7 +40,8 @@ class Handler(panban.api.Handler):
                     "Column with the ID %s not found. %s" % (target_column))
 
         self.dump_markdown(tags, filename)
-        return PortableResponse(version=self.json_api.VERSION, status='ok')
+        return PortableResponse(version=self.json_api.VERSION,
+                status=PortableResponse.STATUS_OK)
 
     @staticmethod
     def _delete_item_ids_from_json(json, item_ids):
@@ -70,7 +71,8 @@ class Handler(panban.api.Handler):
                 del items_by_id[item_id]
 
         self.dump_markdown(tags, filename)
-        return PortableResponse(version=self.json_api.VERSION, status='ok')
+        return PortableResponse(version=self.json_api.VERSION,
+                status=PortableResponse.STATUS_OK)
 
     @staticmethod
     def generate_id(parent_id, label, pos):
@@ -118,28 +120,45 @@ class Handler(panban.api.Handler):
             raise panban.api.SourceFileDoesNotExist(filename)
 
         # TODO: use proper markdown parser
-        tab = self.dict(label=filename, pos=0)
-        tabs = [tab]
         current_column = None
+        parent = None
         path = [filename, '', '']
         nodes_by_id = {}
+        root_node = self.make_node(filename, None, 0)
+        nodes_by_id[root_node.id] = root_node
         with open(filename, 'r') as f:
             for line in f:
                 line = line.rstrip()
                 if line.startswith('# '):
                     label = line[2:]
-                    if label and label not in [col['label'] for col in tab['children']]:
-                        pos = len(tab['children'])
-                        current_column = self.dict(label=label, pos=pos)
-                        tab['children'].append(current_column)
+                    if label:
+                        entries = []
+                        pos = len(root_node.children)
+                        parent = self.make_node(label, root_node, pos)
+                        root_node.children.append(parent.id)
+                        nodes_by_id[parent.id] = parent
                 elif line.startswith('- '):
                     label = line[2:]
-                    if label and current_column:
-                        pos = len(current_column['children'])
-                        entry = self.dict(label=label, pos=pos)
-                        nodes_by_id[entry['id']] = entry
-                        current_column['children'].append(entry)
-        return tabs, nodes_by_id
+                    if label and parent:
+                        pos = len(parent.children)
+                        entry = self.make_node(label, parent, pos)
+                        parent.children.append(entry.id)
+                        nodes_by_id[entry.id] = entry
+        return nodes_by_id
+
+    def make_node(self, label, parent, pos):
+        if isinstance(parent, PortableNode):
+            parent_id = parent.id
+        elif isinstance(parent, str):
+            parent_id = parent
+        else:
+            parent_id = ''
+        pnode = PortableNode()
+        pnode.label = label
+        pnode.parent = parent_id
+        pnode.attrs['pos'] = pos
+        pnode.id = self.generate_id(parent_id, label, pos)
+        return pnode
 
     def dump_markdown(self, data, filename):
         # TODO: rewrite to use api

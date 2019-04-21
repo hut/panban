@@ -19,6 +19,12 @@ def encode_command(version, command, source, arguments=None):
     return cmd_dict
 
 def decode_command(json_data):
+    if isinstance(json_data, str):
+        json_data = json.loads(json_data)
+    elif not isinstance(json_data, dict):
+        raise TypeError("json_data needs to be dict or str, not %s."
+                % type(json_data).__name__)
+
     status = json_data['command']
     version = json_data.get('version', None)
     source = json_data['source']
@@ -35,17 +41,30 @@ class PortableNode(object):
         self.id = None
         self.children = []
         self.parent = None
+        self.attrs = {}
         self._raw_json = None
+
+    def __repr__(self):
+        return '<PortableNode "%s" children=[%s]>' % (
+                self.label, ', '.join(self.children))
 
     @staticmethod
     def from_json(json_api, json_data):
         return json_api.decode_node(json_data)
 
     def to_json(self, json_api):
-        return json_api.encode_node(self)  # TODO
+        return json_api.encode_node(
+            label=self.label,
+            id=self.id,
+            children=self.children,
+            parent=self.parent,
+            attrs=self.attrs,
+        )
 
 
 class PortableResponse(object):
+    STATUS_OK = 'ok'
+
     def __init__(self, version, status, data=None):
         self.status = status
         self.data = data

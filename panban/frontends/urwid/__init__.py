@@ -78,6 +78,11 @@ class UI(object):
 
     def reload(self):
         self.db.reload()
+        self.tabs = []
+        for node_id in self.db.root_node_ids:
+            node = self.db.nodes_by_id[node_id]
+            self.tabs.append(node)
+
         self.kanban_layout.reload()
         self.menu.reload()
 
@@ -177,9 +182,9 @@ class KanbanLayout(urwid.Columns):
                 self.focus_position = focus  # TODO: does this help?
 
     def get_column_nodes(self):
-        if self.active_tab_nr < len(self.ui.db.tabs):
-            active_tab = self.ui.db.tabs[self.active_tab_nr]
-            return active_tab.children
+        if self.active_tab_nr < len(self.ui.tabs):
+            active_tab = self.ui.tabs[self.active_tab_nr]
+            return active_tab.getChildrenNodes()
         else:
             return []
 
@@ -206,7 +211,7 @@ class ColumnBox(urwid.ListBox):
 
         self.list_walker.append(urwid.AttrMap(urwid.Text(self.label), 'heading'))
         self.list_walker.append(urwid.Divider())
-        for entry in column.children:
+        for entry in column.getChildrenNodes():
             widget = EntryButton(self.ui, entry)
             widget = urwid.AttrMap(widget, 'button', 'focus button')
             self.list_walker.append(widget)

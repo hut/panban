@@ -1,6 +1,7 @@
 from panban.json_api.exceptions import *
 from panban.json_api import eternal
 import sys
+import json
 
 VERSION = '1'
 
@@ -9,6 +10,18 @@ VALID_COMMANDS = [
     'moveitemstocolumn',
     'deleteitems',
 ]
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, 'to_json'):
+            if hasattr(obj, 'json_api'):
+                return obj.to_json()
+            else:
+                this_api_module = sys.modules[__name__]
+                return obj.to_json(this_api_module)
+        else:
+            return json.JSONEncoder.default(self, obj)
+
 
 def new_node(label=None, parent=None, pos=None, id=None):
     node = {
@@ -26,14 +39,31 @@ def decode_node(json_data):
     >>> node.pos
     3
     """
+    if isinstance(json_data, str):
+        json_data = json.loads(json_data)
+    elif not isinstance(json_data, dict):
+        raise TypeError("json_data needs to be dict or str, not %s."
+                % type(json_data).__name__)
+
     node = eternal.PortableNode()
     for key in ('label', 'id', 'parent', 'pos', 'children'):
         if key in json_data and json_data[key]:
             setattr(node, key, json_data[key])
     return node
 
-def encode_node(*args, **kwargs):
-    raise NotImplementedError()
+def encode_node(label, id, children, parent, attrs):
+    response = {
+        'label': label,
+        'id': id,
+        'children': children,
+        'parent': parent,
+        'attrs': attrs,
+    }
+    try:
+        return json.dumps(response)
+    except TypeError:
+        raise Exception(response)
+
 
 def encode_response(status, data=None):
     response = {
@@ -42,13 +72,19 @@ def encode_response(status, data=None):
     }
     if data is not None:
         response['data'] = data
-    return response
+    return json.dumps(response, cls=JSONEncoder)
 
 def decode_response(json_data):
+    if isinstance(json_data, str):
+        json_data = json.loads(json_data)
+    elif not isinstance(json_data, dict):
+        raise TypeError("json_data needs to be dict or str, not %s."
+                % type(json_data).__name__)
+
     status = json_data['status']
     version = json_data['version']
     data = json_data.get('data', None)
-    response = PortableResponse(version, status, data)
+    response = eternal.PortableResponse(version, status, data)
     return response
 
 def validate_request(json):

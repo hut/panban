@@ -31,12 +31,19 @@ class Handler(object):
         self.dump_js(self.query(json_data))
 
     def query(self, query):
-        if isinstance(query, PortableCommand):
-            query = query.to_json()
-        elif isinstance(query, dict):
-            pass
-        else:
-            raise ValueError("Query should be dict or PortableCommand")
+        """
+        Args:
+            query: a dictionary with the command query, as created by
+                PortableCommand.to_json()
+        Returns:
+            A dict containing the response from the backend, as created by
+            PortableResponse.to_json().  The version of the json api is as
+            specified by the "version" parameter in the query dictionary.
+        Raises:
+            ValueError: If the query is not a dictionary
+        """
+        if not isinstance(query, dict):
+            raise ValueError("Query should be dict")
         version = json_api.eternal.get_version(query)
         self.json_api = json_api.get_api_version(version)
         self.json_api.validate_request(query)
@@ -57,6 +64,7 @@ class Handler(object):
 
     @staticmethod
     def dict(**kwargs):
+        # TODO: This should be obsolete, no?
         result = {'children': []}
         result.update(kwargs)
         return result
