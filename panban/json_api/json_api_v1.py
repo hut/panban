@@ -110,7 +110,6 @@ def delete_item_ids(json, item_ids):
     for node in json:
         recursively_delete(node, item_ids)
 
-
 def delete_node_ids(nodes_by_id, node_ids):
     for node_id in node_ids:
         if node_id in nodes_by_id:
@@ -120,6 +119,17 @@ def delete_node_ids(nodes_by_id, node_ids):
         for node in nodes_by_id.values():
             while node_id in node.children:
                 node.children.remove(node_id)
+
+def move_node_ids_to_column(nodes_by_id, node_ids, target_column_id):
+    target = nodes_by_id[target_column_id]
+    for node_id in node_ids:
+        node = nodes_by_id[node_id]
+        if node.parent:
+            parent = nodes_by_id[node.parent]
+            while node_id in parent.children:
+                parent.children.remove(node_id)
+        target.children.append(node_id)
+        node.parent = target_column_id
 
 
 if __name__ == '__main__':

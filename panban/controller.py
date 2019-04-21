@@ -169,6 +169,22 @@ class Node(object):
 
         return True
 
+    def move_to_column(self, column_id):
+        response = self.db.command('moveitemstocolumn', item_ids=[self.id],
+            target_column=column_id)
+
+        if self.parent in self.db.nodes_by_id:
+            parent = self.db.nodes_by_id[self.parent]
+            while self.id in parent.children:
+                parent.children.remove(self.id)
+        if column_id in self.db.nodes_by_id:
+            target = self.db.nodes_by_id[column_id]
+            target.children.append(self.id)
+        self.parent = column_id
+
+        self.db.last_modification = time.time()
+        return True
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()

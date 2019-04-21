@@ -105,6 +105,11 @@ class EntryButton(urwid.Button):
     def keypress(self, size, key):
         if key == 'X':
             self.entry.delete()
+        elif key in '123456789':
+            key_int = ord(key) - ord('1')
+            tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]
+            column_id = tab.children[key_int]
+            self.entry.move_to_column(column_id)
         return super(EntryButton, self).keypress(size, key)
 
 

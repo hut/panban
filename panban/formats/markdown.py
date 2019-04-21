@@ -17,40 +17,25 @@ class Handler(panban.api.Handler):
                 status=PortableResponse.STATUS_OK, data=items_by_id)
 
     def cmd_moveitemstocolumn(self, query):
-        # TODO: rewrite to use api
-        filename = self.json_data['source']
-        ids = self.json_data['item_ids']
-        target_column = self.json_data['target_column']
-        tags, items_by_id = self.load_markdown(filename)
+        filename = query.source
+        nodes = self.load_markdown(filename)
 
-        self.db.json_api.delete_item_ids(tags, ids)
-        self._delete_item_ids_from_json(tags, ids)
-        new_items = [items_by_id[item_id] for item_id in ids]
-        success = False
-        for tag in tags:
-            for column in tag['children']:
-                if column['id'] == target_column:
-                    column['children'].extend(new_items)
-                    success = True
-                    break
-            if success:
-                break
-        if not success:
-            raise panban.api.UserFacingException(
-                    "Column with the ID %s not found. %s" % (target_column))
+        ids = query.arguments['item_ids']
+        target_column = query.arguments['target_column']
+        self.json_api.move_node_ids_to_column(nodes, ids, target_column)
 
-        self.dump_markdown(tags, filename)
+        self.dump_markdown(nodes, filename)
         return PortableResponse(version=self.json_api.VERSION,
                 status=PortableResponse.STATUS_OK)
 
     def cmd_deleteitems(self, query):
         filename = query.source
-        ids = query.arguments['item_ids']
-
         nodes = self.load_markdown(filename)
-        self.json_api.delete_node_ids(nodes, ids)
-        self.dump_markdown(nodes, filename)
 
+        ids = query.arguments['item_ids']
+        self.json_api.delete_node_ids(nodes, ids)
+
+        self.dump_markdown(nodes, filename)
         return PortableResponse(version=self.json_api.VERSION,
                 status=PortableResponse.STATUS_OK)
 
