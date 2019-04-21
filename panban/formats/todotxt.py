@@ -11,6 +11,11 @@ import panban.json_api.eternal
 from panban.json_api.eternal import PortableResponse, PortableNode
 
 class Handler(panban.api.Handler):
+    COLUMN_LABEL_TODO = 'Todo'
+    COLUMN_LABEL_ACTIVE = 'Active'
+    COLUMN_LABEL_DONE = 'Done'
+    ACTIVE_CONTEXT = 'active'
+
     def response(self, data=None, status=None):
         if status is None:
             status = PortableResponse.STATUS_OK
@@ -25,23 +30,40 @@ class Handler(panban.api.Handler):
 
     def cmd_getcolumndata(self, query):
         filename = query.source
-        items_by_id = self.load_data(filename)
-        return self.response(items_by_id)
+        self.load_data(filename)
+        return self.response(self.nodes_by_id)
 
     def cmd_moveitemstocolumn(self, query):
         filename = query.source
-        nodes = self.load_markdown(filename)
+        self.load_data(filename)
 
         ids = query.arguments['item_ids']
-        target_column = query.arguments['target_column']
-        self.json_api.move_node_ids_to_column(nodes, ids, target_column)
+        target_column_id = query.arguments['target_column']
+        target_column = self.nodes_by_id[target_column_id]
+        for node_id in ids:
+            todo = self.todos_by_node_id[node_id]
+            if target_column.label == self.COLUMN_LABEL_TODO:
+                todo.completed = False
+                todo.completion_date = None
+                if self.ACTIVE_CONTEXT in todo.contexts:
+                    todo.contexts.remove(self.ACTIVE_CONTEXT)
+            elif target_column.label == self.COLUMN_LABEL_ACTIVE:
+                todo.completed = False
+                todo.completion_date = None
+                if self.ACTIVE_CONTEXT not in todo.contexts:
+                    todo.contexts.append(self.ACTIVE_CONTEXT)
+            elif target_column.label == self.COLUMN_LABEL_DONE:
+                todo.completed = True
+                todo.completion_date = time.strftime('%Y-%m-%d')
+            else:
+                raise Exception('Invalid column')
 
-        self.dump_markdown(nodes, filename)
+        self.dump_data(filename)
         return self.response()
 
     def cmd_deleteitems(self, query):
         filename = query.source
-        nodes = self.load_markdown(filename)
+        items_by_id, todos_by_node_id = self.load_data(filename)
 
         ids = query.arguments['item_ids']
         self.json_api.delete_node_ids(nodes, ids)
@@ -52,7 +74,8 @@ class Handler(panban.api.Handler):
     def load_data(self, filename):
         """
         >>> h = Handler(json_api='1')
-        >>> nodes = h.load_data("test/todo.txt")
+        >>> h.load_data("test/todo.txt")
+        >>> nodes = h.nodes_by_id
         >>> isinstance(nodes, dict)
         True
         >>> len(nodes)
@@ -72,10 +95,16 @@ class Handler(panban.api.Handler):
 
         with open(filename, 'r') as f:
             content = f.read()
-        list_of_todos = todotxtio.from_string(content)
+        self.list_of_todos = todotxtio.from_string(content)
 
         nodes_by_id = {}
+        todos_by_node_id = {}
         projects = {}
+        column_labels = [
+            self.COLUMN_LABEL_TODO,
+            self.COLUMN_LABEL_ACTIVE,
+            self.COLUMN_LABEL_DONE,
+        ]
 
         def add_project(name, pos):
             project_node = self.make_node(
@@ -83,25 +112,25 @@ class Handler(panban.api.Handler):
             nodes_by_id[project_node.id] = project_node
             projects[name] = project_node
 
-            for colpos, column_name in enumerate(['Todo', 'Active', 'Done']):
+            for colpos, column_name in enumerate(column_labels):
                 column_node = self.make_node(column_name, project_node, colpos)
                 nodes_by_id[column_node.id] = column_node
                 project_node.children.append(column_node.id)
 
         project_names = set()
-        for todo in list_of_todos:
+        for todo in self.list_of_todos:
             project_names |= set(todo.projects)
         project_names = list(sorted(project_names))
         add_project("<ALL>", 0)
         for pos, project_name in enumerate(project_names):
             add_project(project_name, pos + 1)
 
-        for todo in list_of_todos:
+        for todo in self.list_of_todos:
             for project_name in ['<ALL>'] + todo.projects:
                 project_node = projects[project_name]
                 if todo.completed:
                     target_column_id = project_node.children[2]
-                elif 'active' in todo.contexts:
+                elif self.ACTIVE_CONTEXT in todo.contexts:
                     target_column_id = project_node.children[1]
                 else:
                     target_column_id = project_node.children[0]
@@ -111,8 +140,10 @@ class Handler(panban.api.Handler):
                 node = self.make_node(todo.text, target_column.id, pos)
                 target_column.children.append(node.id)
                 nodes_by_id[node.id] = node
+                todos_by_node_id[node.id] = todo
 
-        return nodes_by_id
+        self.todos_by_node_id = todos_by_node_id
+        self.nodes_by_id = nodes_by_id
 
     def make_node(self, label, parent, pos):
         if isinstance(parent, PortableNode):
@@ -128,19 +159,8 @@ class Handler(panban.api.Handler):
         pnode.id = self.json_api.generate_node_id(pnode)
         return pnode
 
-    def dump_markdown(self, nodes, filename):
-        roots = [n for n in nodes.values() if n.is_root()]
-        root = roots[0]
-        columns = [nodes[id] for id in root.children]
-        with open(filename, 'w') as f:
-            last_title = columns[-1].label if columns else None
-            for column in columns:
-                f.write("# {title}\n\n".format(title=column.label))
-                for entry_id in column.children:
-                    entry = nodes[entry_id]
-                    f.write("- {entry}\n".format(entry=entry.label))
-                if column.children and not column.label == last_title:
-                    f.write("\n")
+    def dump_data(self, filename):
+        todotxtio.to_file(filename, self.list_of_todos)
 
     def handle(self, query):
         command = query.command
