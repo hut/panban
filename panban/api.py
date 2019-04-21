@@ -61,10 +61,3 @@ class Handler(object):
                 print(e.message)
             return e.exit_code
         return 0
-
-    @staticmethod
-    def dict(**kwargs):
-        # TODO: This should be obsolete, no?
-        result = {'children': []}
-        result.update(kwargs)
-        return result

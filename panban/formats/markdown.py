@@ -87,21 +87,6 @@ class Handler(panban.api.Handler):
         concatenated = concatenated.encode('utf-8')
         return hashlib.sha256(concatenated).hexdigest()
 
-    @staticmethod
-    def dict(**kwargs):
-        # TODO: rewrite to use api
-        if not 'label' in kwargs:
-            raise ValueError("Parameter to markdown Handler.dict() needs to "
-                    "have the key 'label'!")
-        elif not 'pos' in kwargs:
-            raise ValueError("Parameter to markdown Handler.dict() needs to "
-                    "have the key 'pos'!")
-        result = panban.api.Handler.dict(**kwargs)
-        parent_id = result['parent']['id'] if 'parent' in result else ''
-        result['id'] = Handler.generate_id(
-                parent_id, result['label'], result['pos'])
-        return result
-
     def load_markdown(self, filename):
         # TODO: rewrite to use api
         """
