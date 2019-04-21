@@ -1,6 +1,6 @@
-buy groceries
-clean dirty things
+buy groceries +buy
+clean dirty things +chores
 remember the forgotten
-edit this file @active
-x learn to code
+edit this file @active +chores
+x learn to code +chores
 x set a goal
