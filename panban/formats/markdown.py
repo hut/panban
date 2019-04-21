@@ -88,17 +88,21 @@ class Handler(panban.api.Handler):
         return hashlib.sha256(concatenated).hexdigest()
 
     def load_markdown(self, filename):
-        # TODO: rewrite to use api
         """
         >>> h = Handler()
-        >>> data, nodes_by_id = h.load_markdown("test/markdown.md")
-        >>> isinstance(data, list)
+        >>> nodes = h.load_markdown("test/markdown.md")
+        >>> isinstance(nodes, dict)
         True
-        >>> len(data)  # Tabs
+        >>> len(nodes)
+        10
+        >>> roots = [n for n in nodes.values() if not n.parent]
+        >>> len(roots)
         1
-        >>> len(data[0]['children'])  # Columns
+        >>> root = roots[0]
+        >>> columns = [n for n in nodes.values() if n.parent == root.id]
+        >>> len(columns)
         3
-        >>> [len(node['children']) for node in data[0]['children']]  # Entries
+        >>> [len(nodes[column].children) for column in root.children]  # Entries
         [3, 1, 2]
         """
         if not os.path.exists(filename):
