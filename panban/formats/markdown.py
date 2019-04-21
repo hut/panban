@@ -82,7 +82,6 @@ class Handler(panban.api.Handler):
                 if line.startswith('# '):
                     label = line[2:]
                     if label:
-                        entries = []
                         pos = len(root_node.children)
                         parent = self.make_node(label, root_node, pos)
                         root_node.children.append(parent.id)
