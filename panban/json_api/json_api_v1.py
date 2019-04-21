@@ -2,6 +2,7 @@ from panban.json_api.exceptions import *
 from panban.json_api import eternal
 import sys
 import json
+import hashlib
 
 VERSION = '1'
 
@@ -9,6 +10,10 @@ VALID_COMMANDS = [
     'getcolumndata',
     'moveitemstocolumn',
     'deleteitems',
+]
+
+VALID_FEATURES = [
+    'autogenerate_node_ids',
 ]
 
 class JSONEncoder(json.JSONEncoder):
@@ -23,15 +28,23 @@ class JSONEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-def new_node(label=None, parent=None, pos=None, id=None):
-    node = {
-        'children': [],
-        'label': label,
-        'parent': parent,
-        'pos': pos,
-        'id': id,
-    }
-    return node
+def generate_node_id(node):
+    """
+    >>> node = decode_node(dict(parent="Todo", label="dry laundry", pos=12))
+    >>> generate_node_id(node)
+    '647c0d6d35c0090e34b1bc6229086cf8dfd2bd9b1ca177a19df154b5d0c1a6ff'
+    >>> node = decode_node(dict(parent="Todo", label="dry laundry", pos=13))
+    >>> generate_node_id(node)
+    'd458052c5254ae93933b1a5e3e66646cb5f3c5c9560ce420b9699ae3f416469d'
+    """
+    keys = (
+        node.parent,
+        node.label,
+        str(node.pos),
+    )
+    concatenated = "\0".join(keys).encode('utf-8')
+    return hashlib.sha256(concatenated).hexdigest()
+
 
 def decode_node(json_data):
     """
@@ -51,12 +64,13 @@ def decode_node(json_data):
             setattr(node, key, json_data[key])
     return node
 
-def encode_node(label, id, children, parent, attrs):
+def encode_node(label, id, children, parent, pos, attrs):
     response = {
         'label': label,
         'id': id,
         'children': children,
         'parent': parent,
+        'pos': pos,
         'attrs': attrs,
     }
     try:
@@ -65,11 +79,13 @@ def encode_node(label, id, children, parent, attrs):
         raise Exception(response)
 
 
-def encode_response(status, data=None):
+def encode_response(status, data=None, features=None):
     response = {
         'status': status,
         'version': VERSION,
     }
+    if features:
+        response['features'] = features
     if data is not None:
         response['data'] = data
     return json.dumps(response, cls=JSONEncoder)
@@ -83,6 +99,7 @@ def decode_response(json_data):
 
     status = json_data['status']
     version = json_data['version']
+    features = json_data.get('features', [])
     data = json_data.get('data', None)
     response = eternal.PortableResponse(version, status, data)
     return response

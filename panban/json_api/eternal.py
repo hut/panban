@@ -42,6 +42,7 @@ class PortableNode(object):
         self.id = None
         self.children = []
         self.parent = None
+        self.pos = None
         self.attrs = {}
         self._raw_json = None
 
@@ -62,6 +63,7 @@ class PortableNode(object):
             id=self.id,
             children=self.children,
             parent=self.parent,
+            pos=self.pos,
             attrs=self.attrs,
         )
 
@@ -73,13 +75,13 @@ class PortableResponse(object):
         status: Did the request succeed or not?  Can be
             - PortableResponse.STATUS_OK
             - PortableResponse.STATUS_FAIL
-        features: ...
+        features: A list of strings from json_api_vX.AVAILABLE_FEATURES
         data: A dict of data that depends on the request sent by the client.
     """
     STATUS_OK = 'ok'
     STATUS_FAIL = 'fail'
 
-    def __init__(self, version, status, features, data=None):
+    def __init__(self, version, status, features=None, data=None):
         self.status = status
         self.data = data
         self.version = version
@@ -87,7 +89,8 @@ class PortableResponse(object):
         self.json_api = get_api_version(version)
 
     def to_json(self):
-        return self.json_api.encode_response(self.status, self.data)
+        return self.json_api.encode_response(self.status, self.data,
+                self.features)
 
     @staticmethod
     def from_json(json_api, json_data):

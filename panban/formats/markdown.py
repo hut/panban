@@ -39,21 +39,9 @@ class Handler(panban.api.Handler):
         return PortableResponse(version=self.json_api.VERSION,
                 status=PortableResponse.STATUS_OK)
 
-    @staticmethod
-    def generate_id(parent_id, label, pos):
-        """
-        >>> Handler.generate_id("Todo", "dry laundry", 12)
-        '647c0d6d35c0090e34b1bc6229086cf8dfd2bd9b1ca177a19df154b5d0c1a6ff'
-        >>> Handler.generate_id("Todo", "dry laundry", 13)
-        'd458052c5254ae93933b1a5e3e66646cb5f3c5c9560ce420b9699ae3f416469d'
-        """
-        concatenated = "{}\0{}\0{}".format(parent_id, label, pos)
-        concatenated = concatenated.encode('utf-8')
-        return hashlib.sha256(concatenated).hexdigest()
-
     def load_markdown(self, filename):
         """
-        >>> h = Handler()
+        >>> h = Handler(json_api='1')
         >>> nodes = h.load_markdown("test/markdown.md")
         >>> isinstance(nodes, dict)
         True
@@ -110,7 +98,7 @@ class Handler(panban.api.Handler):
         pnode.label = label
         pnode.parent = parent_id
         pnode.attrs['pos'] = pos
-        pnode.id = self.generate_id(parent_id, label, pos)
+        pnode.id = self.json_api.generate_node_id(pnode)
         return pnode
 
     def dump_markdown(self, nodes, filename):

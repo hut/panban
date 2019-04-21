@@ -11,8 +11,12 @@ class UserFacingException(Exception):
 
 
 class Handler(object):
-    def __init__(self, integrated=False):
+    def __init__(self, integrated=False, json_api=None):
         self.integrated = integrated
+        if isinstance(json_api, str):
+            self.json_api = panban.json_api.get_api_version(json_api)
+        else:
+            self.json_api = json_api
 
     def handle(self, query):
         raise NotImplementedError("Please override this method!")
