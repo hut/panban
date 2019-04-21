@@ -194,22 +194,33 @@ class Node(object):
         response = self.db.command('moveitemstocolumn', item_ids=[self.id],
             target_column=column_id)
 
-        if self.parent in self.db.nodes_by_id:
+        parent = None
+        if self.parent:
             parent = self.db.nodes_by_id[self.parent]
             while self.id in parent.children:
                 parent.children.remove(self.id)
         target = self.db.nodes_by_id[column_id]
-        self.pos = len(target.children)
         target.children.append(self.id)
         self.parent = column_id
+        self._update()
+
+        if parent:
+            for child in parent.children:
+                self.db.nodes_by_id[child]._update()
+
+        self.db.last_modification = time.time()
+        return True
+
+    def _update(self):
+        parent = self.db.nodes_by_id[self.parent]
+        if self.id in parent.children:
+            self.pos = parent.children.index(self.id)
 
         if 'autogenerate_node_ids' in self.db.features:
             old_id = self.id
             self.id = self.db.json_api.generate_node_id(self, debug=True)
             self.db._change_id_of_node(old_id, self.id)
 
-        self.db.last_modification = time.time()
-        return True
 
 if __name__ == '__main__':
     import doctest
