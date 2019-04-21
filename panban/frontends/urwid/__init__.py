@@ -223,7 +223,14 @@ class ColumnBox(urwid.ListBox):
         self.list_walker[:] = []
 
         label = "%s <%s>" % (self.label, column.id[:8])
-        self.list_walker.append(urwid.AttrMap(urwid.Text(label), 'heading'))
+        styling = 'heading'
+        if self.label.lower() == 'active':
+            styling = 'heading_Active'
+        elif self.label.lower() in ('inactive', 'todo'):
+            styling = 'heading_Inactive'
+        elif self.label.lower() in ('finished', 'done'):
+            styling = 'heading_Finished'
+        self.list_walker.append(urwid.AttrMap(urwid.Text(label), styling))
         self.list_walker.append(urwid.Divider())
         for entry in column.getChildrenNodes():
             widget = EntryButton(self.ui, entry)
