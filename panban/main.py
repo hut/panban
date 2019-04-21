@@ -25,7 +25,7 @@ def parse_arguments():
     parser.add_argument('-f', '--frontend', type=str, default='urwid',
             help='Which frontend? Current choices: ' + frontend_choices)
     parser.add_argument('-b', '--backend', type=str, default='markdown', 
-            help='Which database type? Current choices: markdown (default)')
+            help='Which database type? Current choices: ' + backend_choices)
     parser.add_argument('source', type=str, nargs=1, metavar='DATABASE_SOURCE')
     args = parser.parse_args()
     return args
