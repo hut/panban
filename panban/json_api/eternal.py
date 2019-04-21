@@ -1,6 +1,7 @@
 # After stable version, never introduce a backwards-compatibility-breaking change here!
 
 from panban.json_api import exceptions, get_api_version
+import json
 
 def get_version(json):
     try:
@@ -16,7 +17,7 @@ def encode_command(version, command, source, arguments=None):
     }
     if arguments is not None:
         cmd_dict['arguments'] = arguments
-    return cmd_dict
+    return json.dumps(cmd_dict)
 
 def decode_command(json_data):
     if isinstance(json_data, str):
@@ -25,11 +26,11 @@ def decode_command(json_data):
         raise TypeError("json_data needs to be dict or str, not %s."
                 % type(json_data).__name__)
 
-    status = json_data['command']
+    command_string = json_data['command']
     version = json_data.get('version', None)
     source = json_data['source']
     arguments = json_data.get('arguments', None)
-    command = PortableCommand(version, command, source, arguments)
+    command = PortableCommand(version, command_string, source, arguments)
     return command
 
 
@@ -43,6 +44,9 @@ class PortableNode(object):
         self.parent = None
         self.attrs = {}
         self._raw_json = None
+
+    def is_root(self):
+        return not self.parent
 
     def __repr__(self):
         return '<PortableNode "%s" children=[%s]>' % (
@@ -96,5 +100,5 @@ class PortableCommand(object):
         return encode_command(self.version, self.command, self.source, self.arguments)
 
     @staticmethod
-    def from_json(json_api, json_data):
+    def from_json(json_data):
         return decode_command(json_data)

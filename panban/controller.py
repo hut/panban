@@ -6,6 +6,7 @@ manipulate the locally cached data representation, and at the same time,
 synchronize the data on the server.
 """
 
+import time
 from panban import json_api
 from panban.json_api import exceptions
 from panban.api import UserFacingException
@@ -20,6 +21,7 @@ class DatabaseAbstraction(object):
         self.nodes_by_id = {}
         self.json_api_version = None
         self.json_api = None
+        self.last_modification = 0
 
     def reload(self):
         self.get_columns()
@@ -141,10 +143,6 @@ class Node(object):
     def __repr__(self):
         return '<Node "{0.label}">'.format(self)
 
-    def _raw_remove_child(self, child):
-        if child in self.children:
-            self.children.remove(child)
-
     def getChildrenNodes(self):
         for node_id in self.children:
             if node_id in self.db.nodes_by_id:
@@ -161,7 +159,14 @@ class Node(object):
         if response.status != response.STATUS_OK:
             raise UserFacingException('Could not delete.  More info: %s' % repr(response))
 
-        self.parent._raw_remove_child(self)
+        if self.id in self.db.nodes_by_id:
+            del self.db.nodes_by_id[self.id]
+        if self.parent in self.db.nodes_by_id:
+            parent = self.db.nodes_by_id[self.parent]
+            while self.id in parent.children:
+                parent.children.remove(self.id)
+        self.db.last_modification = time.time()
+
         return True
 
 if __name__ == '__main__':

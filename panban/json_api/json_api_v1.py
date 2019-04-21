@@ -87,14 +87,12 @@ def decode_response(json_data):
     response = eternal.PortableResponse(version, status, data)
     return response
 
-def validate_request(json):
-    if not isinstance(json, dict):
-        raise NotADictError()
-    if 'command' not in json:
+def validate_request(command):
+    if not command.command:
         raise NoCommandError()
 
-    if json['command'] not in VALID_COMMANDS:
-        raise InvalidCommandError(json['command'])
+    if command.command not in VALID_COMMANDS:
+        raise InvalidCommandError(command.command)
 
 def validate_response(json):
     pass
@@ -111,6 +109,17 @@ def delete_item_ids(json, item_ids):
 
     for node in json:
         recursively_delete(node, item_ids)
+
+
+def delete_node_ids(nodes_by_id, node_ids):
+    for node_id in node_ids:
+        if node_id in nodes_by_id:
+            del nodes_by_id[node_id]
+
+    for node_id in node_ids:
+        for node in nodes_by_id.values():
+            while node_id in node.children:
+                node.children.remove(node_id)
 
 
 if __name__ == '__main__':

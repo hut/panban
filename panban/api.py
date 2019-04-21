@@ -33,8 +33,8 @@ class Handler(object):
     def query(self, query):
         """
         Args:
-            query: a dictionary with the command query, as created by
-                PortableCommand.to_json()
+            query: a json string containing a dictionary with the command
+                query, as created by PortableCommand.to_json()
         Returns:
             A dict containing the response from the backend, as created by
             PortableResponse.to_json().  The version of the json api is as
@@ -42,12 +42,12 @@ class Handler(object):
         Raises:
             ValueError: If the query is not a dictionary
         """
-        if not isinstance(query, dict):
-            raise ValueError("Query should be dict")
-        version = json_api.eternal.get_version(query)
-        self.json_api = json_api.get_api_version(version)
-        self.json_api.validate_request(query)
-        response = self.handle(query)
+        if not isinstance(query, str):
+            raise ValueError("Query should be a string")
+        command = PortableCommand.from_json(query)
+        self.json_api = json_api.get_api_version(command.version)
+        self.json_api.validate_request(command)
+        response = self.handle(command)
         self.json_api.validate_response(response)
         return response
 

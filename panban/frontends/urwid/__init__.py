@@ -1,5 +1,6 @@
-import urwid
 import subprocess
+import time
+import urwid
 
 from panban.api import UserFacingException
 
@@ -78,6 +79,10 @@ class UI(object):
 
     def reload(self):
         self.db.reload()
+        self.rebuild()
+
+    def rebuild(self):
+        self.last_rebuild = time.time()
         self.tabs = []
         for node_id in self.db.root_node_ids:
             node = self.db.nodes_by_id[node_id]
@@ -125,6 +130,8 @@ class Base(urwid.WidgetPlaceholder):
         self.content_widget.reload()
 
     def keypress(self, size, key):
+        if self.db.last_modification > self.ui.last_rebuild:
+            self.ui.rebuild()
         if key in ('tab', 'q'):
             self.flip()
         elif key == 'Q':
