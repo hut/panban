@@ -67,12 +67,23 @@ class PortableNode(object):
 
 
 class PortableResponse(object):
+    """
+    Args:
+        version: The version of the JSON API used to encode the data
+        status: Did the request succeed or not?  Can be
+            - PortableResponse.STATUS_OK
+            - PortableResponse.STATUS_FAIL
+        features: ...
+        data: A dict of data that depends on the request sent by the client.
+    """
     STATUS_OK = 'ok'
+    STATUS_FAIL = 'fail'
 
-    def __init__(self, version, status, data=None):
+    def __init__(self, version, status, features, data=None):
         self.status = status
         self.data = data
         self.version = version
+        self.features = features
         self.json_api = get_api_version(version)
 
     def to_json(self):
