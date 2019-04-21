@@ -36,6 +36,7 @@ class UI(object):
         self.menu = MenuBox(self)
         self.kanban_layout = KanbanLayout(self)
         self.base = Base(self, db, self.kanban_layout, self.menu)
+        self.tabs = None
 
         self._original_urwid_SHOW_CURSOR = urwid.escape.SHOW_CURSOR
 
@@ -45,6 +46,7 @@ class UI(object):
             # https://github.com/urwid/urwid/issues/170
             urwid.escape.SHOW_CURSOR = ''
             self.reload()
+            self.menu.reload()
             self.loop = urwid.MainLoop(self.base, PALETTE)
         else:
             raise Exception("Do not call UI.activate() more than once!")
@@ -83,11 +85,7 @@ class UI(object):
 
     def rebuild(self):
         self.last_rebuild = time.time()
-        self.tabs = []
-        for node_id in self.db.root_node_ids:
-            node = self.db.nodes_by_id[node_id]
-            self.tabs.append(node)
-
+        self.tabs = self.db.get_root_nodes()
         self.kanban_layout.reload()
         self.menu.reload()
 
@@ -152,18 +150,29 @@ class MenuBox(urwid.ListBox):
         self.ui = ui
         self.list_walker = urwid.SimpleFocusListWalker([])
         super(MenuBox, self).__init__(self.list_walker)
-        self.reload()
 
     def reload(self):
         focus = self.list_walker.focus
         self.list_walker[:] = []
-        for entry in ['foo', 'bar', 'zar', 'yar', 'war']:
-            button = urwid.Button(entry)
+        for entry in self.ui.tabs:
+            button = MenuButton(self.ui, entry.label, entry.id)
             urwid.connect_signal(button, 'click',
-                    lambda button: self.ui.base.flip())
+                    lambda button: button.click())
+            button = urwid.AttrMap(button, 'button', 'focus button')
             self.list_walker.append(button)
         if not focus:  # Avoid starting with the bottom item focused
             self.list_walker.set_focus(0)
+
+
+class MenuButton(urwid.Button):
+    def __init__(self, ui, label, node_id):
+        super(MenuButton, self).__init__(label)
+        self.ui = ui
+        self.node_id = node_id
+
+    def click(self):
+        self.ui.kanban_layout.change_tab_by_node_id(self.node_id)
+        self.ui.base.flip()
 
 
 class KanbanLayout(urwid.Columns):
@@ -201,6 +210,12 @@ class KanbanLayout(urwid.Columns):
         else:
             return []
 
+    def change_tab_by_node_id(self, node_id):
+        for i, tab in enumerate(self.ui.tabs):
+            if tab.id == node_id:
+                self.active_tab_nr = i
+                break
+        self.ui.rebuild()
 
 class ColumnBox(urwid.ListBox):
     def __init__(self, ui, label):
