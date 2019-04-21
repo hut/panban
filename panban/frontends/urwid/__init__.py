@@ -177,10 +177,9 @@ class MenuButton(urwid.Button):
 
 class KanbanLayout(urwid.Columns):
     def __init__(self, ui):
-        self.columns = []
         self.ui = ui
         self.active_tab_nr = 0
-        super(KanbanLayout, self).__init__(self.columns, dividechars=1)
+        super(KanbanLayout, self).__init__([], dividechars=1)
         for key, value in VIM_KEYS.items():
             self._command_map[key] = value
 

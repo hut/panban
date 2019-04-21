@@ -56,10 +56,10 @@ class Handler(panban.api.Handler):
         >>> isinstance(nodes, dict)
         True
         >>> len(nodes)
-        10
+        22
         >>> roots = [n for n in nodes.values() if not n.parent]
-        >>> len(roots)
-        1
+        >>> len(roots)  # 1 unfiltered root + 2 roots filtering by project
+        3
         >>> root = roots[0]
         >>> columns = [n for n in nodes.values() if n.parent == root.id]
         >>> len(columns)
@@ -70,37 +70,47 @@ class Handler(panban.api.Handler):
         if not os.path.exists(filename):
             raise panban.api.SourceFileDoesNotExist(filename)
 
-        nodes_by_id = {}
-
-        root_node = self.make_node(filename, None, 0)
-        nodes_by_id[root_node.id] = root_node
-
-        col_todo = self.make_node('Todo', root_node, 0)
-        nodes_by_id[col_todo.id] = col_todo
-
-        col_active = self.make_node('Active', root_node, 1)
-        nodes_by_id[col_active.id] = col_active
-
-        col_done = self.make_node('Done', root_node, 2)
-        nodes_by_id[col_done.id] = col_done
-
-        root_node.children = [col_todo.id, col_active.id, col_done.id]
-
         with open(filename, 'r') as f:
             content = f.read()
         list_of_todos = todotxtio.from_string(content)
-        for todo in list_of_todos:
-            if todo.completed:
-                target_column = col_done
-            elif 'active' in todo.contexts:
-                target_column = col_active
-            else:
-                target_column = col_todo
 
-            pos = len(target_column.children)
-            node = self.make_node(todo.text, target_column.id, pos)
-            target_column.children.append(node.id)
-            nodes_by_id[node.id] = node
+        nodes_by_id = {}
+        projects = {}
+
+        def add_project(name, pos):
+            project_node = self.make_node(
+                "%s [%s]" % (filename, name), None, pos)
+            nodes_by_id[project_node.id] = project_node
+            projects[name] = project_node
+
+            for colpos, column_name in enumerate(['Todo', 'Active', 'Done']):
+                column_node = self.make_node(column_name, project_node, colpos)
+                nodes_by_id[column_node.id] = column_node
+                project_node.children.append(column_node.id)
+
+        project_names = set()
+        for todo in list_of_todos:
+            project_names |= set(todo.projects)
+        project_names = list(sorted(project_names))
+        add_project("<ALL>", 0)
+        for pos, project_name in enumerate(project_names):
+            add_project(project_name, pos + 1)
+
+        for todo in list_of_todos:
+            for project_name in ['<ALL>'] + todo.projects:
+                project_node = projects[project_name]
+                if todo.completed:
+                    target_column_id = project_node.children[2]
+                elif 'active' in todo.contexts:
+                    target_column_id = project_node.children[1]
+                else:
+                    target_column_id = project_node.children[0]
+                target_column = nodes_by_id[target_column_id]
+
+                pos = len(target_column.children)
+                node = self.make_node(todo.text, target_column.id, pos)
+                target_column.children.append(node.id)
+                nodes_by_id[node.id] = node
 
         return nodes_by_id
 
