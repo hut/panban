@@ -10,7 +10,8 @@ def main():
 
     backend = backend_module.Handler()
     controller = DatabaseAbstraction(backend, args.source[0])
-    frontend = frontend_module.UI(controller, debug=args.debug)
+    frontend = frontend_module.UI(controller,
+            initial_tab=args.tab, debug=args.debug)
     frontend.main()
 
 def parse_arguments():
@@ -28,6 +29,8 @@ def parse_arguments():
             help='Which database type? Current choices: ' + backend_choices)
     parser.add_argument('--debug', action='store_true',
             help='Enable debugging features')
+    parser.add_argument('-t', '--tab', type=str,
+            help='Change the default starting tab')
     parser.add_argument('source', type=str, nargs=1, metavar='DATABASE_SOURCE')
     args = parser.parse_args()
     return args

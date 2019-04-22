@@ -32,10 +32,11 @@ PALETTE = [
 
 
 class UI(object):
-    def __init__(self, db, debug=False):
+    def __init__(self, db, initial_tab=None, debug=False):
         self.db = db
         self.loop = None
         self.debug = debug
+        self.initial_tab = initial_tab
 
         self.menu = MenuBox(self)
         self.kanban_layout = KanbanLayout(self)
@@ -207,6 +208,7 @@ class KanbanLayout(urwid.Columns):
     def __init__(self, ui):
         self.ui = ui
         self.active_tab_nr = 0
+        self.first_load = True
         super(KanbanLayout, self).__init__([], dividechars=1)
         for key, value in VIM_KEYS.items():
             self._command_map[key] = value
@@ -216,6 +218,14 @@ class KanbanLayout(urwid.Columns):
             focus = self.focus_position
         except IndexError:
             focus = None
+
+        if self.first_load:
+            self.first_load = False
+            if self.ui.initial_tab:
+                for i, tab in enumerate(self.ui.tabs):
+                    if tab.label == self.ui.initial_tab:
+                        self.active_tab_nr = i
+                        break
 
         columnboxes = []
         for column in self.get_column_nodes():
