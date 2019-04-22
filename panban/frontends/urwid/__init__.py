@@ -71,10 +71,11 @@ class UI(object):
             pass
         self.reactivate()
 
-    def edit_string(self, string):
+    def edit_string(self, string=''):
         tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
         filename = tmp.name
-        tmp.write(string)
+        if string:
+            tmp.write(string)
         tmp.close()
         self.system(['vim', filename])
         with open(filename, 'r') as f:
@@ -213,7 +214,7 @@ class KanbanLayout(urwid.Columns):
 
         columnboxes = []
         for column in self.get_column_nodes():
-            columnbox = ColumnBox(self.ui, column.label)
+            columnbox = ColumnBox(self.ui, column)
             columnbox.reload()
             columnboxes.append((columnbox, self.options()))
         self.contents = columnboxes
@@ -239,9 +240,10 @@ class KanbanLayout(urwid.Columns):
         self.ui.rebuild()
 
 class ColumnBox(urwid.ListBox):
-    def __init__(self, ui, label):
+    def __init__(self, ui, column):
         self.ui = ui
-        self.label = label
+        self.label = column.label
+        self.column = column
         self.list_walker = urwid.SimpleFocusListWalker([])
         super(ColumnBox, self).__init__(self.list_walker)
         for key, value in VIM_KEYS.items():
@@ -280,3 +282,9 @@ class ColumnBox(urwid.ListBox):
 
         if not focus:  # Avoid starting with the bottom item focused
             self.list_walker.set_focus(0)
+
+    def keypress(self, size, key):
+        if key == 'A':
+            new_label = self.ui.edit_string()
+            self.ui.db.add_node(new_label, self.column.id)
+        return super(ColumnBox, self).keypress(size, key)

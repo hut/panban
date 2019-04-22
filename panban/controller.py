@@ -42,6 +42,11 @@ class DatabaseAbstraction(object):
                 self.root_node_ids.append(node.id)
             self.nodes_by_id[node.id] = node
 
+    def add_node(self, label, parent_id):
+        response = self.command('add_node', label=label,
+                target_column=parent_id)
+        self.reload()
+
     def get_root_nodes(self):
         return [self.nodes_by_id[id] for id in self.root_node_ids]
 
