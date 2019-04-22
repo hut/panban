@@ -12,6 +12,7 @@ from panban.json_api.eternal import PortableResponse, PortableNode
 
 class Handler(panban.api.Handler):
     COLUMN_LABEL_TODO = 'Todo'
+    COLUMN_LABEL_URGENT = 'High Prio'
     COLUMN_LABEL_ACTIVE = 'Active'
     COLUMN_LABEL_DONE = 'Done'
     ACTIVE_CONTEXT = 'active'
@@ -45,6 +46,7 @@ class Handler(panban.api.Handler):
             if target_column.label == self.COLUMN_LABEL_TODO:
                 todo.completed = False
                 todo.completion_date = None
+                todo.priority = None
                 if self.ACTIVE_CONTEXT in todo.contexts:
                     todo.contexts.remove(self.ACTIVE_CONTEXT)
             elif target_column.label == self.COLUMN_LABEL_ACTIVE:
@@ -52,6 +54,12 @@ class Handler(panban.api.Handler):
                 todo.completion_date = None
                 if self.ACTIVE_CONTEXT not in todo.contexts:
                     todo.contexts.append(self.ACTIVE_CONTEXT)
+            elif target_column.label == self.COLUMN_LABEL_URGENT:
+                todo.completed = False
+                todo.completion_date = None
+                todo.priority = 'A'
+                if self.ACTIVE_CONTEXT in todo.contexts:
+                    todo.contexts.remove(self.ACTIVE_CONTEXT)
             elif target_column.label == self.COLUMN_LABEL_DONE:
                 todo.completed = True
                 todo.completion_date = time.strftime('%Y-%m-%d')
@@ -102,6 +110,7 @@ class Handler(panban.api.Handler):
         projects = {}
         column_labels = [
             self.COLUMN_LABEL_TODO,
+            self.COLUMN_LABEL_URGENT,
             self.COLUMN_LABEL_ACTIVE,
             self.COLUMN_LABEL_DONE,
         ]
@@ -129,8 +138,10 @@ class Handler(panban.api.Handler):
             for project_name in ['<ALL>'] + todo.projects:
                 project_node = projects[project_name]
                 if todo.completed:
-                    target_column_id = project_node.children[2]
+                    target_column_id = project_node.children[3]
                 elif self.ACTIVE_CONTEXT in todo.contexts:
+                    target_column_id = project_node.children[2]
+                elif todo.priority == 'A':
                     target_column_id = project_node.children[1]
                 else:
                     target_column_id = project_node.children[0]
