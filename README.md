@@ -12,11 +12,11 @@ This project is still in alpha phase, expect everything to change.
 | k          | move up                         |
 | h          | move to the column on the left  |
 | l          | move to the column on the right |
-| <Enter>    | edit entry                      |
+| `ENTER`    | edit entry                      |
 | A          | add new entry                   |
 | X          | delete entry                    |
 | R          | reload entries                  |
-| q or <TAB> | change the tab/project          |
+| q or `TAB` | change the tab/project          |
 | Q          | quit                            |
 
 As of 2019-04-22, it is necessary to reload after certain operations to ensure
