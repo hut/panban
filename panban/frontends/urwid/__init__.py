@@ -30,9 +30,10 @@ PALETTE = [
 
 
 class UI(object):
-    def __init__(self, db):
+    def __init__(self, db, debug=False):
         self.db = db
         self.loop = None
+        self.debug = debug
 
         self.menu = MenuBox(self)
         self.kanban_layout = KanbanLayout(self)
@@ -98,7 +99,10 @@ class EntryButton(urwid.Button):
     def __init__(self, ui, entry):
         self.ui = ui
         self.entry = entry
-        label = "%s <%s>" % (entry.label, entry.id[:8])
+        if self.ui.debug:
+            label = "%s <%s>" % (entry.label, entry.id[:8])
+        else:
+            label = entry.label
         super(EntryButton, self).__init__(label)
         urwid.connect_signal(self, 'click', lambda button: self.ui.system(['vim']))  # TODO
 
@@ -237,10 +241,15 @@ class ColumnBox(urwid.ListBox):
 
         self.list_walker[:] = []
 
-        label = "%s <%s>" % (self.label, column.id[:8])
+        if self.ui.debug:
+            label = "%s <%s>" % (self.label, column.id[:8])
+        else:
+            label = self.label
         styling = 'heading'
         if self.label.lower() == 'active':
             styling = 'heading_Active'
+        elif self.label.lower() in ('urgent', 'high prio'):
+            styling = 'heading_Urgent'
         elif self.label.lower() in ('inactive', 'todo'):
             styling = 'heading_Inactive'
         elif self.label.lower() in ('finished', 'done'):
