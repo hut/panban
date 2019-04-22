@@ -8,6 +8,7 @@ import argparse
 import todotxtio
 import panban.api
 import panban.json_api.eternal
+from panban.json_api import exceptions
 from panban.json_api.eternal import PortableResponse, PortableNode
 
 class Handler(panban.api.Handler):
@@ -35,6 +36,15 @@ class Handler(panban.api.Handler):
         filename = query.source
         self.load_data(filename)
         return self.response(self.nodes_by_id)
+
+    def cmd_changelabel(self, query):
+        self.load_data(query.source)
+
+        todo = self.todos_by_node_id[query.arguments['item_id']]
+        todo.text = query.arguments['new_label']
+
+        self.dump_data(query.source)
+        return self.response()
 
     def cmd_moveitemstocolumn(self, query):
         filename = query.source
@@ -188,8 +198,10 @@ class Handler(panban.api.Handler):
             response = self.cmd_moveitemstocolumn(query)
         elif command == 'deleteitems':
             response = self.cmd_deleteitems(query)
+        elif command == 'changelabel':
+            response = self.cmd_changelabel(query)
         else:
-            raise panban.api.InvalidCommandError(command)
+            raise exceptions.InvalidCommandError(command)
         return response.to_json()
 
 

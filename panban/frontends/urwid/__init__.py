@@ -1,6 +1,8 @@
 import subprocess
 import time
 import urwid
+import tempfile
+import os
 
 from panban.api import UserFacingException
 
@@ -69,6 +71,17 @@ class UI(object):
             pass
         self.reactivate()
 
+    def edit_string(self, string):
+        tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
+        filename = tmp.name
+        tmp.write(string)
+        tmp.close()
+        self.system(['vim', filename])
+        with open(filename, 'r') as f:
+            new_string = f.read().rstrip('\n')
+        os.unlink(filename)
+        return new_string
+
     def get_entries(self):
         return self.db.get_columns()
 
@@ -104,7 +117,11 @@ class EntryButton(urwid.Button):
         else:
             label = entry.label
         super(EntryButton, self).__init__(label)
-        urwid.connect_signal(self, 'click', lambda button: self.ui.system(['vim']))  # TODO
+        urwid.connect_signal(self, 'click', lambda button: button.edit_label())
+
+    def edit_label(self):
+        new_label = self.ui.edit_string(self.entry.label)
+        self.entry.change_label(new_label)
 
     def keypress(self, size, key):
         if key == 'X':

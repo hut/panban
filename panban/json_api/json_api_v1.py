@@ -9,6 +9,7 @@ VERSION = '1'
 VALID_COMMANDS = [
     'getcolumndata',
     'moveitemstocolumn',
+    'changelabel',
     'deleteitems',
 ]
 

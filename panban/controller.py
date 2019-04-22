@@ -194,6 +194,7 @@ class Node(object):
         return True
 
     def move_to_column(self, column_id):
+        # TODO: handle failure
         response = self.db.command('moveitemstocolumn', item_ids=[self.id],
             target_column=column_id)
 
@@ -212,6 +213,15 @@ class Node(object):
                 self.db.nodes_by_id[child]._update()
 
         self.db.last_modification = time.time()
+        return True
+
+    def change_label(self, new_label):
+        # TODO: handle failure
+        response = self.db.command('changelabel', item_id=self.id,
+            new_label=new_label)
+        self.label = new_label
+        self._update()
+        self.db.last_modification = time.time()  # TODO: doesn't refresh view?
         return True
 
     def _update(self):
