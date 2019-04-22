@@ -77,7 +77,10 @@ class UI(object):
         if string:
             tmp.write(string)
         tmp.close()
-        self.system(['vim', filename])
+        if string:
+            self.system(['vim', filename])
+        else:
+            self.system(['vim', '-c', 'startinsert', filename])
         with open(filename, 'r') as f:
             new_string = f.read().rstrip('\n')
         os.unlink(filename)
