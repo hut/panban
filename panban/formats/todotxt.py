@@ -23,6 +23,14 @@ class Handler(panban.api.Handler):
     PROJECT_NAME_ALL = '.*'
     PROJECT_NAME_NONE = '^$'
 
+    @staticmethod
+    def node_label_to_todo_label(node_label):
+        return node_label.replace('\n', '<br>')
+
+    @staticmethod
+    def todo_label_to_node_label(todo_label):
+        return todo_label.replace('<br>', '\n')
+
     def response(self, data=None, status=None):
         if status is None:
             status = PortableResponse.STATUS_OK
@@ -39,7 +47,7 @@ class Handler(panban.api.Handler):
         self.load_data(query.source)
 
         todo = todotxtio.Todo(
-            text=query.arguments['label'],
+            text=self.node_label_to_todo_label(query.arguments['label']),
             creation_date=today()
         )
 
@@ -75,7 +83,7 @@ class Handler(panban.api.Handler):
         self.load_data(query.source)
 
         todo = self.todos_by_node_id[query.arguments['item_id']]
-        todo.text = query.arguments['new_label']
+        todo.text = self.node_label_to_todo_label(query.arguments['new_label'])
 
         self.dump_data(query.source)
         return self.response()
@@ -201,7 +209,8 @@ class Handler(panban.api.Handler):
                 target_column = nodes_by_id[target_column_id]
 
                 pos = len(target_column.children)
-                node = self.make_node(todo.text, target_column.id, pos)
+                label = self.todo_label_to_node_label(todo.text)
+                node = self.make_node(label, target_column.id, pos)
                 target_column.children.append(node.id)
                 nodes_by_id[node.id] = node
                 todos_by_node_id[node.id] = todo
