@@ -6,6 +6,7 @@ This project is still in alpha phase, expect everything to change.
 
 # Key bindings
 
+| key        | action                          |
 |------------|---------------------------------|
 | j          | move down                       |
 | k          | move up                         |
@@ -17,7 +18,6 @@ This project is still in alpha phase, expect everything to change.
 | R          | reload entries                  |
 | q or <TAB> | change the tab/project          |
 | Q          | quit                            |
-|------------|---------------------------------|
 
 As of 2019-04-22, it is necessary to reload after certain operations to ensure
 that the program doesn't crash.  To be on the safe side, just reload the data
