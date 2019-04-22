@@ -121,8 +121,9 @@ class EntryButton(urwid.Button):
         urwid.connect_signal(self, 'click', lambda button: button.edit_label())
 
     def edit_label(self):
-        new_label = self.ui.edit_string(self.entry.label)
-        if new_label.strip():
+        old_label = self.entry.label
+        new_label = self.ui.edit_string(old_label)
+        if new_label.strip() and old_label != new_label:
             self.entry.change_label(new_label)
 
     def keypress(self, size, key):
