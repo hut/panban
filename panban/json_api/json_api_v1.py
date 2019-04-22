@@ -26,7 +26,7 @@ VALID_FEATURES = [
 ]
 
 class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj):  # pylint: disable=method-hidden
         if hasattr(obj, 'to_json'):
             if hasattr(obj, 'json_api'):
                 return obj.to_json()
@@ -34,7 +34,7 @@ class JSONEncoder(json.JSONEncoder):
                 this_api_module = sys.modules[__name__]
                 return obj.to_json(this_api_module)
         else:
-            return json.JSONEncoder.default(self, obj)
+            return super(JSONEncoder, self).default(obj)
 
 
 def generate_node_id(node, debug=False):

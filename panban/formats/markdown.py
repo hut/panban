@@ -8,6 +8,7 @@ import argparse
 import panban.api
 import panban.json_api.eternal
 from panban.json_api.eternal import PortableResponse, PortableNode
+from panban.json_api import exceptions
 
 class Handler(panban.api.Handler):
     def response(self, data=None, status=None):
@@ -67,7 +68,7 @@ class Handler(panban.api.Handler):
         [3, 1, 2]
         """
         if not os.path.exists(filename):
-            raise panban.api.SourceFileDoesNotExist(filename)
+            raise exceptions.SourceFileDoesNotExist(filename)
 
         # TODO: use proper markdown parser
         current_column = None
@@ -132,7 +133,7 @@ class Handler(panban.api.Handler):
         elif command == 'delete_nodes':
             response = self.cmd_deleteitems(query)
         else:
-            raise panban.api.InvalidCommandError(command)
+            raise exceptions.InvalidCommandError(command)
         return response.to_json()
 
 

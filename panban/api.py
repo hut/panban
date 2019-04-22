@@ -1,7 +1,7 @@
 import json
 import sys
 import panban.json_api.eternal
-from panban.json_api.exceptions import HandlerException
+from panban.json_api import exceptions
 from panban.json_api.eternal import PortableCommand
 from panban import json_api
 
@@ -30,7 +30,7 @@ class Handler(object):
         try:
             json_data = json.load(data_stream)
         except ValueError as e:
-            raise InvalidJSONDataError()
+            raise exceptions.InvalidJSONDataError()
 
         self.dump_js(self.query(json_data))
 
@@ -58,7 +58,7 @@ class Handler(object):
     def main_with_error_handling(self, data_stream):
         try:
             error_code = self.main(data_stream)
-        except HandlerException as e:
+        except exceptions.HandlerException as e:
             if e.args:
                 print(e.message.format(*e.args))
             else:

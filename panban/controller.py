@@ -74,6 +74,7 @@ class DatabaseAbstraction(object):
         try:
             response = self.handler.query(query.to_json())
         except exceptions.JSONAPIVersionUnsupportedByServer as e:
+            server_versions = e.supported_versions
             for v in reversed(json_api.AVAILABLE_VERSIONS):
                 if v in server_versions:
                     json_api_version = v

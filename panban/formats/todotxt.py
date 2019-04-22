@@ -155,7 +155,7 @@ class Handler(panban.api.Handler):
         [3, 0, 1, 2]
         """
         if not os.path.exists(filename):
-            raise panban.api.SourceFileDoesNotExist(filename)
+            raise exceptions.SourceFileDoesNotExist(filename)
 
         with open(filename, 'r') as f:
             content = f.read()
