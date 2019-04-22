@@ -25,6 +25,7 @@ PALETTE = [
     ('heading_Inactive', 'black', 'dark gray'),
     ('heading_Active', 'black', 'dark red'),
     ('heading_Finished', 'black', 'dark green'),
+    ('heading_Urgent', 'black', 'light magenta'),
 ]
 
 
