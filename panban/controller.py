@@ -28,7 +28,7 @@ class DatabaseAbstraction(object):
         self.get_columns()
 
     def get_columns(self):
-        response = self.command('getcolumndata')
+        response = self.command('load_all')
         if response.status != response.STATUS_OK:
             raise UserFacingException('Could not fetch columns.  More info: %s'
                     % repr(response))
@@ -179,7 +179,7 @@ class Node(object):
         if self.parent is None:
             raise UserFacingException('Could not delete node, since it has no parent!')
 
-        response = self.db.command('deleteitems', item_ids=[self.id])
+        response = self.db.command('delete_nodes', item_ids=[self.id])
         if response.status != response.STATUS_OK:
             raise UserFacingException('Could not delete.  More info: %s' % repr(response))
 
@@ -195,7 +195,7 @@ class Node(object):
 
     def move_to_column(self, column_id):
         # TODO: handle failure
-        response = self.db.command('moveitemstocolumn', item_ids=[self.id],
+        response = self.db.command('move_nodes', item_ids=[self.id],
             target_column=column_id)
 
         parent = None
@@ -217,7 +217,7 @@ class Node(object):
 
     def change_label(self, new_label):
         # TODO: handle failure
-        response = self.db.command('changelabel', item_id=self.id,
+        response = self.db.command('change_label', item_id=self.id,
             new_label=new_label)
         self.label = new_label
         self._update()

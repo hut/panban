@@ -192,13 +192,13 @@ class Handler(panban.api.Handler):
 
     def handle(self, query):
         command = query.command
-        if command == 'getcolumndata':
+        if command == 'load_all':
             response = self.cmd_getcolumndata(query)
-        elif command == 'moveitemstocolumn':
+        elif command == 'move_nodes':
             response = self.cmd_moveitemstocolumn(query)
-        elif command == 'deleteitems':
+        elif command == 'delete_nodes':
             response = self.cmd_deleteitems(query)
-        elif command == 'changelabel':
+        elif command == 'change_label':
             response = self.cmd_changelabel(query)
         else:
             raise exceptions.InvalidCommandError(command)

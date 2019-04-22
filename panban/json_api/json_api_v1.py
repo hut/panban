@@ -7,10 +7,10 @@ import hashlib
 VERSION = '1'
 
 VALID_COMMANDS = [
-    'getcolumndata',
-    'moveitemstocolumn',
-    'changelabel',
-    'deleteitems',
+    'load_all',
+    'move_nodes',
+    'change_label',
+    'delete_nodes',
 ]
 
 VALID_FEATURES = [
