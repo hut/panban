@@ -87,16 +87,16 @@ class Handler(panban.api.Handler):
         >>> isinstance(nodes, dict)
         True
         >>> len(nodes)
-        22
+        25
         >>> roots = [n for n in nodes.values() if not n.parent]
         >>> len(roots)  # 1 unfiltered root + 2 roots filtering by project
         3
         >>> root = roots[0]
         >>> columns = [n for n in nodes.values() if n.parent == root.id]
         >>> len(columns)
-        3
+        4
         >>> [len(nodes[column].children) for column in root.children]  # Entries
-        [3, 1, 2]
+        [3, 0, 1, 2]
         """
         if not os.path.exists(filename):
             raise panban.api.SourceFileDoesNotExist(filename)
