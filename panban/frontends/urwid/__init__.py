@@ -122,7 +122,8 @@ class EntryButton(urwid.Button):
 
     def edit_label(self):
         new_label = self.ui.edit_string(self.entry.label)
-        self.entry.change_label(new_label)
+        if new_label.strip():
+            self.entry.change_label(new_label)
 
     def keypress(self, size, key):
         if key == 'X':
@@ -286,5 +287,6 @@ class ColumnBox(urwid.ListBox):
     def keypress(self, size, key):
         if key == 'A':
             new_label = self.ui.edit_string()
-            self.ui.db.add_node(new_label, self.column.id)
+            if new_label.strip():
+                self.ui.db.add_node(new_label, self.column.id)
         return super(ColumnBox, self).keypress(size, key)
