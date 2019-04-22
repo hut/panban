@@ -11,6 +11,9 @@ import panban.json_api.eternal
 from panban.json_api import exceptions
 from panban.json_api.eternal import PortableResponse, PortableNode
 
+def today():
+    return time.strftime('%Y-%m-%d')
+
 class Handler(panban.api.Handler):
     COLUMN_LABEL_TODO = 'Todo'
     COLUMN_LABEL_URGENT = 'High Prio'
@@ -31,6 +34,37 @@ class Handler(panban.api.Handler):
             features=['autogenerate_node_ids'],
         )
         return response
+
+    def cmd_addnode(self, query):
+        self.load_data(query.source)
+
+        todo = todotxtio.Todo(
+            text=query.arguments['label'],
+            creation_date=today()
+        )
+
+        # Infer metadata from column
+        parent_id = query.arguments['target_column']
+        parent = self.nodes_by_id[parent_id]
+        if parent.label == self.COLUMN_LABEL_DONE:
+            todo.completed = True
+            todo.completion_date = today()
+        elif parent.label == self.COLUMN_LABEL_ACTIVE:
+            todo.contexts.append(self.ACTIVE_CONTEXT)
+        elif parent.label == self.COLUMN_LABEL_URGENT:
+            todo.priority = 'A'
+
+        # Set the project
+        project_node_id = parent.parent
+        project_node = self.nodes_by_id[project_node_id]
+        if project_node.label not in (
+                self.PROJECT_NAME_ALL, self.PROJECT_NAME_NONE):
+            todo.projects.append(project_node.label)
+
+        self.list_of_todos.append(todo)
+
+        self.dump_data(query.source)
+        return self.response()
 
     def cmd_getcolumndata(self, query):
         filename = query.source
@@ -200,6 +234,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_deleteitems(query)
         elif command == 'change_label':
             response = self.cmd_changelabel(query)
+        elif command == 'add_node':
+            response = self.cmd_addnode(query)
         else:
             raise exceptions.InvalidCommandError(command)
         return response.to_json()

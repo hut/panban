@@ -11,6 +11,7 @@ VALID_COMMANDS = [
     'move_nodes',
     'change_label',
     'delete_nodes',
+    'add_node',
 ]
 
 VALID_FEATURES = [
