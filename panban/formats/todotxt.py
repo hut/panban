@@ -116,13 +116,15 @@ class Handler(panban.api.Handler):
         return self.response()
 
     def cmd_deleteitems(self, query):
-        filename = query.source
-        items_by_id, todos_by_node_id = self.load_data(filename)
+        self.load_data(query.source)
 
         ids = query.arguments['item_ids']
-        self.json_api.delete_node_ids(nodes, ids)
+        to_be_deleted = [self.todos_by_node_id[node_id] for node_id in ids]
+        for i in reversed(range(len(self.list_of_todos))):
+            if self.list_of_todos[i] in to_be_deleted:
+                del self.list_of_todos[i]
 
-        self.dump_markdown(nodes, filename)
+        self.dump_data(query.source)
         return self.response()
 
     def load_data(self, filename):
