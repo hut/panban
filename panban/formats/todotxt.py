@@ -16,6 +16,8 @@ class Handler(panban.api.Handler):
     COLUMN_LABEL_ACTIVE = 'Active'
     COLUMN_LABEL_DONE = 'Done'
     ACTIVE_CONTEXT = 'active'
+    PROJECT_NAME_ALL = '.*'
+    PROJECT_NAME_NONE = '^$'
 
     def response(self, data=None, status=None):
         if status is None:
@@ -116,8 +118,7 @@ class Handler(panban.api.Handler):
         ]
 
         def add_project(name, pos):
-            project_node = self.make_node(
-                "%s [%s]" % (filename, name), None, pos)
+            project_node = self.make_node(name, None, pos)
             nodes_by_id[project_node.id] = project_node
             projects[name] = project_node
 
@@ -130,12 +131,18 @@ class Handler(panban.api.Handler):
         for todo in self.list_of_todos:
             project_names |= set(todo.projects)
         project_names = list(sorted(project_names))
-        add_project("<ALL>", 0)
+        add_project(self.PROJECT_NAME_ALL, 0)
         for pos, project_name in enumerate(project_names):
             add_project(project_name, pos + 1)
 
         for todo in self.list_of_todos:
-            for project_name in ['<ALL>'] + todo.projects:
+            if 't' in todo.tags:
+                # Hide items that are below the date threshold
+                today = time.strftime('%Y-%m-%d')
+                if todo.tags['t'] > today:
+                    continue
+
+            for project_name in [self.PROJECT_NAME_ALL] + todo.projects:
                 project_node = projects[project_name]
                 if todo.completed:
                     target_column_id = project_node.children[3]
