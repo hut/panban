@@ -70,18 +70,19 @@ def decode_node(json_data):
                 % type(json_data).__name__)
 
     node = eternal.PortableNode()
-    for key in ('label', 'id', 'parent', 'pos', 'children'):
+    for key in ('label', 'id', 'parent', 'pos', 'prio', 'children'):
         if key in json_data and json_data[key]:
             setattr(node, key, json_data[key])
     return node
 
-def encode_node(label, id, children, parent, pos, attrs):
+def encode_node(label, id, children, parent, pos, prio, attrs):
     response = {
         'label': label,
         'id': id,
         'children': children,
         'parent': parent,
         'pos': pos,
+        'prio': prio,
         'attrs': attrs,
     }
     try:

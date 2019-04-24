@@ -43,6 +43,7 @@ class PortableNode(object):
         self.children = []
         self.parent = None
         self.pos = None
+        self.prio = None
         self.attrs = {}
         self._raw_json = None
 
@@ -63,6 +64,7 @@ class PortableNode(object):
             id=self.id,
             children=self.children,
             parent=self.parent,
+            prio=self.prio,
             pos=self.pos,
             attrs=self.attrs,
         )

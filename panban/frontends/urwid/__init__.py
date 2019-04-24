@@ -290,7 +290,19 @@ class ColumnBox(urwid.ListBox):
             styling = 'heading_Finished'
         self.list_walker.append(urwid.AttrMap(urwid.Text(label), styling))
         self.list_walker.append(urwid.Divider())
-        for entry in column.getChildrenNodes():
+
+        done = self.label.lower() in ('finished', 'done')
+        nodes = list(column.getChildrenNodes())
+        nodes.sort(key=lambda node: node.label)
+        if not done:
+            nodes.sort(key=lambda node: node.prio or '[')
+        previous_prio = None
+        for entry in nodes:
+            if not done:
+                if entry.prio != previous_prio and previous_prio is not None:
+                    self.list_walker.append(urwid.Divider())
+                    self.list_walker.append(urwid.Divider())
+                previous_prio = entry.prio
             widget = EntryButton(self.ui, entry)
             widget = urwid.AttrMap(widget, 'button', 'focus button')
             self.list_walker.append(widget)

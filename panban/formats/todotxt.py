@@ -172,12 +172,13 @@ class Handler(panban.api.Handler):
         ]
 
         def add_project(name, pos):
-            project_node = self.make_node(name, None, pos)
+            project_node = self.make_node(name, None, pos, None)
             nodes_by_id[project_node.id] = project_node
             projects[name] = project_node
 
             for colpos, column_name in enumerate(column_labels):
-                column_node = self.make_node(column_name, project_node, colpos)
+                column_node = self.make_node(column_name, project_node, colpos,
+                        None)
                 nodes_by_id[column_node.id] = column_node
                 project_node.children.append(column_node.id)
 
@@ -210,7 +211,8 @@ class Handler(panban.api.Handler):
 
                 pos = len(target_column.children)
                 label = self.todo_label_to_node_label(todo.text)
-                node = self.make_node(label, target_column.id, pos)
+                prio = todo.priority
+                node = self.make_node(label, target_column.id, pos, prio)
                 target_column.children.append(node.id)
                 nodes_by_id[node.id] = node
                 todos_by_node_id[node.id] = todo
@@ -218,7 +220,7 @@ class Handler(panban.api.Handler):
         self.todos_by_node_id = todos_by_node_id
         self.nodes_by_id = nodes_by_id
 
-    def make_node(self, label, parent, pos):
+    def make_node(self, label, parent, pos, prio):
         if isinstance(parent, PortableNode):
             parent_id = parent.id
         elif isinstance(parent, str):
@@ -229,6 +231,7 @@ class Handler(panban.api.Handler):
         pnode.label = label
         pnode.parent = parent_id
         pnode.pos = pos
+        pnode.prio = prio
         pnode.id = self.json_api.generate_node_id(pnode)
         return pnode
 
