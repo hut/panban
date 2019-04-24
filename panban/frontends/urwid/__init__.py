@@ -117,8 +117,8 @@ class EntryButton(urwid.Button):
     def __init__(self, ui, entry):
         self.ui = ui
         self.entry = entry
-        if self.ui.debug:
-            label = "%s <%s>" % (entry.label, entry.id[:8])
+        if not self.ui.kanban_layout.hide_metadata:
+            label = "{0.label} [{0.prio}] <{1}>".format(entry, entry.id[:8])
         else:
             label = entry.label
         super(EntryButton, self).__init__(label)
@@ -209,6 +209,7 @@ class KanbanLayout(urwid.Columns):
         self.ui = ui
         self.active_tab_nr = 0
         self.first_load = True
+        self.hide_metadata = not self.ui.debug
         super(KanbanLayout, self).__init__([], dividechars=1)
         for key, value in VIM_KEYS.items():
             self._command_map[key] = value
@@ -254,6 +255,12 @@ class KanbanLayout(urwid.Columns):
                 break
         self.ui.rebuild()
 
+    def keypress(self, size, key):
+        if key == 'z':
+            self.hide_metadata ^= True
+            self.ui.rebuild()
+        return super(KanbanLayout, self).keypress(size, key)
+
 class ColumnBox(urwid.ListBox):
     def __init__(self, ui, column):
         self.ui = ui
@@ -275,7 +282,7 @@ class ColumnBox(urwid.ListBox):
 
         self.list_walker[:] = []
 
-        if self.ui.debug:
+        if not self.ui.kanban_layout.hide_metadata:
             label = "%s <%s>" % (self.label, column.id[:8])
         else:
             label = self.label

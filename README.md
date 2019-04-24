@@ -13,6 +13,7 @@ This project is still in alpha phase, expect everything to change.
 | h          | move to the column on the left  |
 | l          | move to the column on the right |
 | `ENTER`    | edit entry                      |
+| z          | toggle visibility of metadata   |
 | A          | add new entry                   |
 | X          | delete entry                    |
 | R          | reload entries                  |
