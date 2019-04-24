@@ -161,6 +161,8 @@ class Node(object):
         node.children = portable_node.children
         node.parent = portable_node.parent
         node.prio = portable_node.prio
+        node.creation_date = portable_node.creation_date
+        node.completion_date = portable_node.completion_date
         node._raw_json = portable_node._raw_json
 
         # Not needed anymore, since children is now a list of IDs

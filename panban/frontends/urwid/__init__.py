@@ -118,7 +118,7 @@ class EntryButton(urwid.Button):
         self.ui = ui
         self.entry = entry
         if not self.ui.kanban_layout.hide_metadata:
-            label = "{0.label} [{0.prio}] <{1}>".format(entry, entry.id[:8])
+            label = "{0.label} [prio={0.prio} id={1} create={0.creation_date} complete={0.completion_date}]".format(entry, entry.id[:8])
         else:
             label = entry.label
         super(EntryButton, self).__init__(label)
@@ -301,15 +301,25 @@ class ColumnBox(urwid.ListBox):
         done = self.label.lower() in ('finished', 'done')
         nodes = list(column.getChildrenNodes())
         nodes.sort(key=lambda node: node.label)
-        if not done:
+        if done:
+            nodes.sort(key=lambda node: node.completion_date or '0000-00-00')
+            nodes.reverse()
+        else:
             nodes.sort(key=lambda node: node.prio or '[')
-        previous_prio = None
+
+        previous_group = None
+        if done:
+            grouper = lambda node: node.completion_date
+        else:
+            grouper = lambda node: node.prio
+
         for entry in nodes:
-            if not done:
-                if entry.prio != previous_prio and previous_prio is not None:
-                    self.list_walker.append(urwid.Divider())
-                    self.list_walker.append(urwid.Divider())
-                previous_prio = entry.prio
+            group = grouper(entry)
+            if group != previous_group and previous_group is not None:
+                #self.list_walker.append(urwid.Divider())
+                self.list_walker.append(urwid.Divider())
+            previous_group = group
+
             widget = EntryButton(self.ui, entry)
             widget = urwid.AttrMap(widget, 'button', 'focus button')
             self.list_walker.append(widget)

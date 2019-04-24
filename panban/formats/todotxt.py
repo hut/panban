@@ -212,7 +212,10 @@ class Handler(panban.api.Handler):
                 pos = len(target_column.children)
                 label = self.todo_label_to_node_label(todo.text)
                 prio = todo.priority
-                node = self.make_node(label, target_column.id, pos, prio)
+                node = self.make_node(label, target_column.id, pos, prio,
+                        creation_date=todo.creation_date,
+                        completion_date=todo.completion_date)
+
                 target_column.children.append(node.id)
                 nodes_by_id[node.id] = node
                 todos_by_node_id[node.id] = todo
@@ -220,7 +223,8 @@ class Handler(panban.api.Handler):
         self.todos_by_node_id = todos_by_node_id
         self.nodes_by_id = nodes_by_id
 
-    def make_node(self, label, parent, pos, prio):
+    def make_node(self, label, parent, pos, prio, creation_date=None,
+            completion_date=None):
         if isinstance(parent, PortableNode):
             parent_id = parent.id
         elif isinstance(parent, str):
@@ -233,6 +237,8 @@ class Handler(panban.api.Handler):
         pnode.pos = pos
         pnode.prio = prio
         pnode.id = self.json_api.generate_node_id(pnode)
+        pnode.creation_date = creation_date
+        pnode.completion_date = completion_date
         return pnode
 
     def dump_data(self, filename):
