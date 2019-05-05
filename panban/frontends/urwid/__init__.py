@@ -299,22 +299,31 @@ class ColumnBox(urwid.ListBox):
         self.list_walker.append(urwid.Divider())
 
         done = self.label.lower() in ('finished', 'done')
+        active = self.label.lower() in ('active', )
         nodes = list(column.getChildrenNodes())
         nodes.sort(key=lambda node: node.label)
         if done:
             nodes.sort(key=lambda node: node.completion_date or '0000-00-00')
             nodes.reverse()
+        elif active:
+            pass
         else:
             nodes.sort(key=lambda node: node.prio or '[')
 
         previous_group = None
         if done:
             grouper = lambda node: node.completion_date
+        elif active:
+            grouper = None
         else:
             grouper = lambda node: node.prio
 
         for entry in nodes:
-            group = grouper(entry)
+            if grouper is not None:
+                group = grouper(entry)
+            else:
+                group = 1
+
             if group != previous_group and previous_group is not None:
                 #self.list_walker.append(urwid.Divider())
                 self.list_walker.append(urwid.Divider())
