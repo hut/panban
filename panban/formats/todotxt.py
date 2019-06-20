@@ -19,9 +19,9 @@ class Handler(panban.api.Handler):
     COLUMN_LABEL_URGENT = 'High Prio'
     COLUMN_LABEL_ACTIVE = 'Active'
     COLUMN_LABEL_DONE = 'Done'
-    ACTIVE_CONTEXT = 'active'
-    PROJECT_NAME_ALL = '.*'
-    PROJECT_NAME_NONE = '^$'
+    ACTIVE_TAG = 'active'
+    FILTER_NAME_ALL = '.*'
+    FILTER_NAME_NONE = '^$'
 
     @staticmethod
     def node_label_to_todo_label(node_label):
@@ -58,16 +58,16 @@ class Handler(panban.api.Handler):
             todo.completed = True
             todo.completion_date = today()
         elif parent.label == self.COLUMN_LABEL_ACTIVE:
-            todo.contexts.append(self.ACTIVE_CONTEXT)
+            todo.projects.append(self.ACTIVE_TAG)
         elif parent.label == self.COLUMN_LABEL_URGENT:
             todo.priority = 'A'
 
         # Set the project
-        project_node_id = parent.parent
-        project_node = self.nodes_by_id[project_node_id]
-        if project_node.label not in (
-                self.PROJECT_NAME_ALL, self.PROJECT_NAME_NONE):
-            todo.projects.append(project_node.label)
+        context_node_id = parent.parent
+        context_node = self.nodes_by_id[context_node_id]
+        if context_node.label not in (
+                self.FILTER_NAME_ALL, self.FILTER_NAME_NONE):
+            todo.contexts.append(context_node.label)
 
         self.list_of_todos.append(todo)
 
@@ -101,19 +101,19 @@ class Handler(panban.api.Handler):
                 todo.completed = False
                 todo.completion_date = None
                 todo.priority = None
-                if self.ACTIVE_CONTEXT in todo.contexts:
-                    todo.contexts.remove(self.ACTIVE_CONTEXT)
+                if self.ACTIVE_TAG in todo.projects:
+                    todo.projects.remove(self.ACTIVE_TAG)
             elif target_column.label == self.COLUMN_LABEL_ACTIVE:
                 todo.completed = False
                 todo.completion_date = None
-                if self.ACTIVE_CONTEXT not in todo.contexts:
-                    todo.contexts.append(self.ACTIVE_CONTEXT)
+                if self.ACTIVE_TAG not in todo.projects:
+                    todo.projects.append(self.ACTIVE_TAG)
             elif target_column.label == self.COLUMN_LABEL_URGENT:
                 todo.completed = False
                 todo.completion_date = None
                 todo.priority = 'A'
-                if self.ACTIVE_CONTEXT in todo.contexts:
-                    todo.contexts.remove(self.ACTIVE_CONTEXT)
+                if self.ACTIVE_TAG in todo.projects:
+                    todo.projects.remove(self.ACTIVE_TAG)
             elif target_column.label == self.COLUMN_LABEL_DONE:
                 todo.completed = True
                 todo.completion_date = time.strftime('%Y-%m-%d')
@@ -171,7 +171,7 @@ class Handler(panban.api.Handler):
             self.COLUMN_LABEL_DONE,
         ]
 
-        def add_project(name, pos):
+        def add_context(name, pos):
             project_node = self.make_node(name, None, pos, None)
             nodes_by_id[project_node.id] = project_node
             projects[name] = project_node
@@ -182,13 +182,13 @@ class Handler(panban.api.Handler):
                 nodes_by_id[column_node.id] = column_node
                 project_node.children.append(column_node.id)
 
-        project_names = set()
+        context_names = set()
         for todo in self.list_of_todos:
-            project_names |= set(todo.projects)
-        project_names = list(sorted(project_names))
-        add_project(self.PROJECT_NAME_ALL, 0)
-        for pos, project_name in enumerate(project_names):
-            add_project(project_name, pos + 1)
+            context_names |= set(todo.contexts)
+        context_names = list(sorted(context_names))
+        add_context(self.FILTER_NAME_ALL, 0)
+        for pos, context_name in enumerate(context_names):
+            add_context(context_name, pos + 1)
 
         for todo in self.list_of_todos:
             if 't' in todo.tags:
@@ -197,11 +197,11 @@ class Handler(panban.api.Handler):
                 if todo.tags['t'] > today:
                     continue
 
-            for project_name in [self.PROJECT_NAME_ALL] + todo.projects:
+            for project_name in [self.FILTER_NAME_ALL] + todo.contexts:
                 project_node = projects[project_name]
                 if todo.completed:
                     target_column_id = project_node.children[3]
-                elif self.ACTIVE_CONTEXT in todo.contexts:
+                elif self.ACTIVE_TAG in todo.projects:
                     target_column_id = project_node.children[2]
                 elif todo.priority == 'A':
                     target_column_id = project_node.children[1]
