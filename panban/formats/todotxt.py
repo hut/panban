@@ -187,8 +187,9 @@ class Handler(panban.api.Handler):
             context_names |= set(todo.contexts)
         context_names = list(sorted(context_names))
         add_context(self.FILTER_NAME_ALL, 0)
+        add_context(self.FILTER_NAME_NONE, 1)
         for pos, context_name in enumerate(context_names):
-            add_context(context_name, pos + 1)
+            add_context(context_name, pos + 2)
 
         for todo in self.list_of_todos:
             if 't' in todo.tags:
@@ -197,7 +198,10 @@ class Handler(panban.api.Handler):
                 if todo.tags['t'] > today:
                     continue
 
-            for project_name in [self.FILTER_NAME_ALL] + todo.contexts:
+            additional_contexts = [self.FILTER_NAME_ALL]
+            if not todo.contexts:
+                additional_contexts.append(self.FILTER_NAME_NONE)
+            for project_name in additional_contexts + todo.contexts:
                 project_node = projects[project_name]
                 if todo.completed:
                     target_column_id = project_node.children[3]
