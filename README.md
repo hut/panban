@@ -2,7 +2,8 @@
 
 A modular kanban tool with swappable front-ends and database interfaces.
 
-This project is still in alpha phase, expect everything to change.
+This project is an early (albeit functional) prototype, not actively in
+development anymore.
 
 # Key bindings
 
@@ -23,3 +24,8 @@ This project is still in alpha phase, expect everything to change.
 As of 2019-04-22, it is necessary to reload after certain operations to ensure
 that the program doesn't crash.  To be on the safe side, just reload the data
 with `R` after every operation.
+
+# How to run
+
+- `./panban.py -b todotxt test/todo.txt`
+- `./panban.py -b markdown test/markdown.md`
