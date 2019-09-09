@@ -1,6 +1,12 @@
 # Panban
 
-A modular kanban tool with swappable front-ends and database interfaces.
+A modular kanban tool with swappable front-ends and database interfaces.  It
+allows you to view various kinds of structured data as a kanban board, with a
+consistent UI.  Currently supported data formats are:
+
+- Markdown lists (read+write)
+- todo.txt (read+write)
+- GitHub issues (read only)
 
 This project is an early (albeit functional) prototype, not actively in
 development anymore.
