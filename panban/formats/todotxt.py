@@ -5,7 +5,6 @@ import re
 import time
 import hashlib
 import argparse
-import todotxtio
 import panban.api
 import panban.json_api.eternal
 from panban.json_api import exceptions
@@ -44,6 +43,8 @@ class Handler(panban.api.Handler):
         return response
 
     def cmd_addnode(self, query):
+        import todotxtio
+
         self.load_data(query.source)
 
         todo = todotxtio.Todo(
@@ -154,6 +155,9 @@ class Handler(panban.api.Handler):
         >>> [len(nodes[column].children) for column in root.children]  # Entries
         [3, 0, 1, 2]
         """
+
+        import todotxtio
+
         if not os.path.exists(filename):
             raise exceptions.SourceFileDoesNotExist(filename)
 
@@ -246,6 +250,7 @@ class Handler(panban.api.Handler):
         return pnode
 
     def dump_data(self, filename):
+        import todotxtio
         todotxtio.to_file(filename, self.list_of_todos)
 
     def handle(self, query):
