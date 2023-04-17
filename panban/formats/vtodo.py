@@ -30,47 +30,70 @@ class Handler(panban.api.Handler):
                 if filename.lower().endswith('.ics')]
 
         self.nodes_by_id = {}
+        self.categories = {}
 
-        root_node = self.make_node(
-            uid='__root',
-            label='all',
-            parent=None,
-        )
-        self.nodes_by_id[root_node.id] = root_node
+        def add_category(label, key=None):
+            # use "key" for internal categories where key != label, e.g. "__all"
+            if key is None:
+                key = label
 
-        column_todo = self.make_node(
-            uid='__todo',
-            label='Todo',
-            parent=root_node.id,
-            pos=0,
-        )
-        self.nodes_by_id[column_todo.id] = column_todo
-        root_node.children.append(column_todo.id)
+            category_uid = '__category_' + key
+            category_node = self.make_node(
+                uid=category_uid,
+                label=label,
+                parent = None,
+            )
+            self.nodes_by_id[category_node.id] = category_node
 
-        column_done = self.make_node(
-            uid='__done',
-            label='Done',
-            parent=root_node.id,
-            pos=1,
-        )
-        self.nodes_by_id[column_done.id] = column_done
-        root_node.children.append(column_done.id)
+            column_todo = self.make_node(
+                uid=category_uid + '__todo',
+                label='Todo',
+                parent=category_uid,
+                pos=0,
+            )
+            self.nodes_by_id[column_todo.id] = column_todo
+            category_node.children.append(column_todo.id)
 
+            column_done = self.make_node(
+                uid=category_uid + '__done',
+                label='Done',
+                parent=category_uid,
+                pos=1,
+            )
+            self.nodes_by_id[column_done.id] = column_done
+            category_node.children.append(column_done.id)
+
+            self.categories[key] = category_node
+
+        # First of all, add a category that every node will belong to
+        add_category('All Entries', '__all')
+
+        # Then add a node for every ICS file in the directory, along with extra categories
         for filename in ics_files:
             path = os.path.join(basedir, filename)
             uid, vtodo = self._extract_todo(path)
+            column_index = 1 if str(vtodo.get('status', None)) == 'COMPLETED' else 0
 
-            parent = column_todo
-            if str(vtodo.get('status', None)) == 'COMPLETED':
-                parent = column_done
+            if 'categories' in vtodo:
+                categories_internal = vtodo['categories']
+                categories = [str(cat) for cat in categories_internal.cats]
+            else:
+                categories = []
 
             pnode = self.make_node(
                 uid=uid,
                 label=str(vtodo['summary']),
-                parent=parent.id,
+                parent=self.categories['__all'].children[column_index],
             )
             self.nodes_by_id[uid] = pnode
-            parent.children.append(pnode.id)
+
+            # Add the node to its categories. Create categories that don't exist.
+            for category_label in ['__all'] + categories:
+                if category_label not in self.categories:
+                    add_category(category_label)
+                category = self.categories[category_label]
+                column = self.nodes_by_id[category.children[column_index]]
+                column.children.append(pnode.id)
 
     def _extract_todo(self, path):
         import icalendar
