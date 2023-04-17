@@ -11,6 +11,7 @@ consistent UI.  Currently supported data formats are:
 - Markdown lists (read+write)
 - todo.txt (read+write)
 - GitHub issues (read only)
+- VTODO (CalDAV tasks, synced via e.g. vdirsyncer) (read only)
 
 This project is an early (albeit functional) prototype, not actively in
 development anymore.
@@ -39,6 +40,7 @@ with `R` after every operation.
 
 - `./panban.py -b todotxt test/todo.txt`
 - `./panban.py -b markdown test/markdown.md`
+- `./panban.py -b vtodo /path/to/calendar`
 
 You can also use this to view github issues (read-only):
 
