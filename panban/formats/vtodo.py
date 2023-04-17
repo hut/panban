@@ -67,10 +67,6 @@ class Handler(panban.api.Handler):
         for vtodo in dirty:
             self._write_vtodo(vtodo)
 
-        # Reload everything again so internal state matches
-        # the changes we just wrote
-        self.load_data(query.source)
-
         return self.response()
 
     def load_data(self, basedir):
