@@ -96,6 +96,17 @@ class Handler(panban.api.Handler):
         self._write_vtodo(vtodo, create=True)
         return self.response()
 
+    def cmd_deleteitems(self, query):
+        self.load_data(query.source)
+        paths = []
+        for uid in query.arguments['item_ids']:
+            path = self.node_id_to_path[uid]
+            paths.append(path)
+
+        for path in paths:
+            os.unlink(path)
+
+        return self.response()
 
     def cmd_moveitemstocolumn(self, query):
         import icalendar
@@ -359,6 +370,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_getcolumndata(query)
         elif command == 'move_nodes':
             response = self.cmd_moveitemstocolumn(query)
+        elif command == 'delete_nodes':
+            response = self.cmd_deleteitems(query)
         elif command == 'change_label':
             response = self.cmd_changelabel(query)
         elif command == 'add_node':

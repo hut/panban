@@ -11,7 +11,7 @@ consistent UI.  Currently supported data formats are:
 - Markdown lists (read+write)
 - todo.txt (read+write)
 - GitHub issues (read only)
-- VTODO (CalDAV tasks, synced via e.g. vdirsyncer) (read+write, except add/delete)
+- VTODO (CalDAV tasks, synced via e.g. vdirsyncer) (read+write)
 
 # Key bindings
 
