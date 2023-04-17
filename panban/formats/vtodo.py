@@ -107,6 +107,7 @@ class Handler(panban.api.Handler):
                     if vtodo not in dirty: dirty.append(vtodo)
 
         for vtodo in dirty:
+            vtodo['last-modified'] = now
             self._write_vtodo(vtodo)
 
         return self.response()
