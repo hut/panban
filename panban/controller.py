@@ -27,6 +27,9 @@ class DatabaseAbstraction(object):
     def reload(self):
         self.get_columns()
 
+    def sync(self):
+        self.command('sync')
+
     def get_columns(self):
         response = self.command('load_all')
         if response.status != response.STATUS_OK:

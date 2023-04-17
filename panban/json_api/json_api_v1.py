@@ -12,6 +12,7 @@ VALID_COMMANDS = [
     'change_label',
     'delete_nodes',
     'add_node',
+    'sync',
 ]
 
 VALID_FEATURES = [

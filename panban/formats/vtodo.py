@@ -1,4 +1,5 @@
 import os.path
+import subprocess
 import sys
 import panban.api
 from panban.json_api import exceptions
@@ -215,6 +216,9 @@ class Handler(panban.api.Handler):
             response = self.cmd_getcolumndata(query)
         elif command == 'move_nodes':
             response = self.cmd_moveitemstocolumn(query)
+        elif command == 'sync':
+            subprocess.check_call(['vdirsyncer', 'sync'])
+            response = self.response()
         else:
             raise exceptions.InvalidCommandError(command)
         return response.to_json()

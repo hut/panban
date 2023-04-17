@@ -58,7 +58,10 @@ class UI(object):
 
     def deactivate(self):
         self.loop.screen.write(self._original_urwid_SHOW_CURSOR)
-        self.loop.stop()
+        try:
+            self.loop.stop()
+        except AttributeError:
+            pass
 
     def reactivate(self):
         self.base.reload()
@@ -133,6 +136,11 @@ class EntryButton(urwid.Button):
     def keypress(self, size, key):
         if key == 'X':
             self.entry.delete()
+        if key == 'y':
+            self.ui.deactivate()
+            self.ui.db.sync()
+            self.ui.reactivate()
+            self.ui.reload()
         elif key in '123456789':
             key_int = ord(key) - ord('1')
             tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]
