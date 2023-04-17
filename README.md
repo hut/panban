@@ -13,9 +13,6 @@ consistent UI.  Currently supported data formats are:
 - GitHub issues (read only)
 - VTODO (CalDAV tasks, synced via e.g. vdirsyncer) (read only)
 
-This project is an early (albeit functional) prototype, not actively in
-development anymore.
-
 # Key bindings
 
 | key        | action                          |
