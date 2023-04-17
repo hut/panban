@@ -2,6 +2,7 @@ import datetime
 import os.path
 import subprocess
 import sys
+import uuid
 import panban.api
 from panban.json_api import exceptions
 from panban.json_api.eternal import PortableResponse, PortableNode
@@ -17,6 +18,8 @@ COL_ID_TODAY = 1
 COL_ID_DONE = 2
 
 SHOW_COMPLETED_ITEMS_FOR_DAYS = 14
+
+ROOT_CATEGORY = '__all'
 
 VTODO_STATUS_TODO = 'NEEDS-ACTION'
 VTODO_STATUS_DONE = 'COMPLETED'
@@ -51,6 +54,48 @@ class Handler(panban.api.Handler):
             self._write_vtodo(vtodo)
 
         return self.response()
+
+    def cmd_addnode(self, query):
+        import icalendar
+
+        vtodo = icalendar.Todo()
+        vtodo['summary'] = query.arguments['label']
+        vtodo['created'] = icalendar.vDatetime(datetime.datetime.now())
+        vtodo['uid'] = uid = str(uuid.uuid4())
+
+        path = os.path.join(self.basedir, '%s.ics' % uid)
+        if os.path.exists(path):
+            raise Exception('Path already exists: %s' % path)
+
+        # Infer metadata from column
+        column_id = query.arguments['target_column']
+        column = self.nodes_by_id[column_id]
+        if column.label == COL_LABEL_TODO:
+            vtodo['status'] = VTODO_STATUS_TODO
+        elif column.label in (COL_LABEL_TODAY, COL_LABEL_DONE):
+            vtodo['status'] = VTODO_STATUS_TODO
+            vtodo['due'] = icalendar.vDatetime(datetime.datetime.now())
+
+        # Set tag
+        category_id = column.parent
+        if category_id != ROOT_CATEGORY:
+            category = self.nodes_by_id[category_id]
+            vtodo['categories'] = category.label
+
+        node = self.make_node(
+            uid=uid,
+            label=vtodo['summary'],
+            parent=category_id,
+        )
+
+        self.vtodos_by_id[uid] = vtodo
+        self.node_id_to_path[uid] = path
+        self.nodes_by_id[uid] = node
+        column.children.append(uid)
+
+        self._write_vtodo(vtodo, create=True)
+        return self.response()
+
 
     def cmd_moveitemstocolumn(self, query):
         import icalendar
@@ -137,6 +182,7 @@ class Handler(panban.api.Handler):
         ics_files = [filename for filename in os.listdir(basedir) \
                 if filename.lower().endswith('.ics')]
 
+        self.basedir = basedir
         self.nodes_by_id = {}
         self.vtodos_by_id = {}
         self.node_id_to_path = {}
@@ -186,7 +232,7 @@ class Handler(panban.api.Handler):
             self.categories[key] = category_node
 
         # First of all, add a category that every node will belong to
-        add_category('All Entries', '__all', 3)
+        add_category('All Entries', ROOT_CATEGORY, 3)
 
         # Then add a node for every ICS file in the directory, along with extra categories
         for filename in ics_files:
@@ -222,14 +268,14 @@ class Handler(panban.api.Handler):
             pnode = self.make_node(
                 uid=uid,
                 label=str(vtodo['summary']),
-                parent=self.categories['__all'].children[column_index],
+                parent=self.categories[ROOT_CATEGORY].children[column_index],
             )
             self.nodes_by_id[uid] = pnode
             self.vtodos_by_id[uid] = vtodo
             self.node_id_to_path[uid] = path
 
             # Add the node to its categories. Create categories that don't exist.
-            for category_label in ['__all'] + categories:
+            for category_label in [ROOT_CATEGORY] + categories:
                 if category_label not in self.categories:
                     add_category(category_label)
                 category = self.categories[category_label]
@@ -257,7 +303,7 @@ class Handler(panban.api.Handler):
         uid = str(vtodo['uid'])
         return uid, vtodo
 
-    def _write_vtodo(self, vtodo):
+    def _write_vtodo(self, vtodo, create=False):
         import icalendar
 
         vtodo['last-modified'] = icalendar.vDatetime(datetime.datetime.now())
@@ -265,25 +311,29 @@ class Handler(panban.api.Handler):
         uid = str(vtodo['uid'])
         path = self.node_id_to_path[uid]
 
-        with open(path, 'r') as f:
-            content = f.read()
+        if not create:
+            with open(path, 'r') as f:
+                content = f.read()
 
-        # We got the VTODO item as method argument, but the root
-        # component of an .ics file is a VCALENDAR.
-        # Let's extract that, and then swap out the old VTODO with
-        # the new one we got as method argument.
-        vcalendar = icalendar.Todo.from_ical(content)
-        if vcalendar.name == 'VTODO':
-            vcalendar = vtodo
-        else:
-            for i, component in enumerate(vcalendar.subcomponents):
-                if component.name == 'VTODO':
-                    vcalendar.subcomponents[i] = vtodo
-                    break
+            # We got the VTODO item as method argument, but the root
+            # component of an .ics file is a VCALENDAR.
+            # Let's extract that, and then swap out the old VTODO with
+            # the new one we got as method argument.
+            vcalendar = icalendar.Todo.from_ical(content)
+            if vcalendar.name == 'VTODO':
+                vcalendar = vtodo
             else:
-                vcalendar.subcomponents.append(vtodo)
+                for i, component in enumerate(vcalendar.subcomponents):
+                    if component.name == 'VTODO':
+                        vcalendar.subcomponents[i] = vtodo
+                        break
+                else:
+                    vcalendar.subcomponents.append(vtodo)
+        else:
+            vcalendar = vtodo
 
         content = vcalendar.to_ical().decode('utf-8')
+
         with open(path, 'w') as f:
             f.write(content)
 
@@ -311,6 +361,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_moveitemstocolumn(query)
         elif command == 'change_label':
             response = self.cmd_changelabel(query)
+        elif command == 'add_node':
+            response = self.cmd_addnode(query)
         elif command == 'sync':
             subprocess.check_call(['vdirsyncer', 'sync'])
             response = self.response()
