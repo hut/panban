@@ -39,6 +39,19 @@ class Handler(panban.api.Handler):
         self.load_data(query.source)
         return self.response(self.nodes_by_id)
 
+    def cmd_changelabel(self, query):
+        self.load_data(query.source)
+
+        uid = query.arguments['item_id']
+        vtodo = self.vtodos_by_id[uid]
+        old_label = str(vtodo['summary'])
+        new_label = query.arguments['new_label']
+        if old_label != new_label:
+            vtodo['summary'] = new_label
+            self._write_vtodo(vtodo)
+
+        return self.response()
+
     def cmd_moveitemstocolumn(self, query):
         import icalendar
         ids = query.arguments['item_ids']
@@ -111,7 +124,6 @@ class Handler(panban.api.Handler):
                     if vtodo not in dirty: dirty.append(vtodo)
 
         for vtodo in dirty:
-            vtodo['last-modified'] = now
             self._write_vtodo(vtodo)
 
         return self.response()
@@ -248,6 +260,8 @@ class Handler(panban.api.Handler):
     def _write_vtodo(self, vtodo):
         import icalendar
 
+        vtodo['last-modified'] = icalendar.vDatetime(datetime.datetime.now())
+
         uid = str(vtodo['uid'])
         path = self.node_id_to_path[uid]
 
@@ -295,6 +309,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_getcolumndata(query)
         elif command == 'move_nodes':
             response = self.cmd_moveitemstocolumn(query)
+        elif command == 'change_label':
+            response = self.cmd_changelabel(query)
         elif command == 'sync':
             subprocess.check_call(['vdirsyncer', 'sync'])
             response = self.response()
