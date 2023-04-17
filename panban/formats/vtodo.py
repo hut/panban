@@ -74,6 +74,7 @@ class Handler(panban.api.Handler):
                 # Make sure that these requirements are met:
                 if str(vtodo.get('status', '')) != VTODO_STATUS_DONE:
                     vtodo['status'] = VTODO_STATUS_DONE
+                    vtodo['completed'] = icalendar.vDatetime(datetime.datetime.now())
                     if vtodo not in dirty: dirty.append(vtodo)
 
             elif query.arguments['target_column'].endswith(COL_TODAY):
@@ -86,6 +87,8 @@ class Handler(panban.api.Handler):
                     if vtodo not in dirty: dirty.append(vtodo)
                 if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
                     vtodo['status'] = VTODO_STATUS_TODO
+                    if 'completed' in vtodo:
+                        del vtodo['completed']
                     if vtodo not in dirty: dirty.append(vtodo)
 
             else:
@@ -98,6 +101,8 @@ class Handler(panban.api.Handler):
                     if vtodo not in dirty: dirty.append(vtodo)
                 if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
                     vtodo['status'] = VTODO_STATUS_TODO
+                    if 'completed' in vtodo:
+                        del vtodo['completed']
                     if vtodo not in dirty: dirty.append(vtodo)
 
         for vtodo in dirty:
