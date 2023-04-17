@@ -38,7 +38,7 @@ with `R` after every operation.
 - `./panban.py -b todotxt test/todo.txt`
 - `./panban.py -b markdown test/markdown.md`
 
-You can also use this to view github issues:
+You can also use this to view github issues (read-only):
 
 - `./panban.py -b github ranger/ranger`
 
