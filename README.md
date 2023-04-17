@@ -21,6 +21,7 @@ consistent UI.  Currently supported data formats are:
 | k          | move up                         |
 | h          | move to the column on the left  |
 | l          | move to the column on the right |
+| 1-9        | move entry to column N          |
 | `ENTER`    | edit entry                      |
 | z          | toggle visibility of metadata   |
 | A          | add new entry                   |
