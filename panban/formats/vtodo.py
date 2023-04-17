@@ -1,3 +1,4 @@
+import datetime
 import os.path
 import subprocess
 import sys
@@ -6,9 +7,14 @@ from panban.json_api import exceptions
 from panban.json_api.eternal import PortableResponse, PortableNode
 
 COL_TODO = '__todo'
+COL_TODAY = '__today'
 COL_DONE = '__done'
+COL_LABEL_TODO = 'Todo'
+COL_LABEL_TODAY = 'Active'
+COL_LABEL_DONE = 'DONE'
 COL_ID_TODO = 0
-COL_ID_DONE = 1
+COL_ID_TODAY = 1
+COL_ID_DONE = 2
 
 VTODO_STATUS_TODO = 'NEEDS-ACTION'
 VTODO_STATUS_DONE = 'COMPLETED'
@@ -99,16 +105,25 @@ class Handler(panban.api.Handler):
 
             column_todo = self.make_node(
                 uid=category_uid + COL_TODO,
-                label='Todo',
+                label=COL_LABEL_TODO,
                 parent=category_uid,
                 pos=0,
             )
             self.nodes_by_id[column_todo.id] = column_todo
             category_node.children.append(column_todo.id)
 
+            column_today = self.make_node(
+                uid=category_uid + COL_TODAY,
+                label=COL_LABEL_TODAY,
+                parent=category_uid,
+                pos=0,
+            )
+            self.nodes_by_id[column_today.id] = column_today
+            category_node.children.append(column_today.id)
+
             column_done = self.make_node(
                 uid=category_uid + COL_DONE,
-                label='Done',
+                label=COL_LABEL_DONE,
                 parent=category_uid,
                 pos=1,
             )
@@ -125,8 +140,16 @@ class Handler(panban.api.Handler):
             path = os.path.join(basedir, filename)
             uid, vtodo = self._extract_vtodo(path)
             status = str(vtodo.get('status', None))
+            if 'due' in vtodo:
+                due_date = vtodo['due'].dt.strftime("%Y-%m-%d")
+                today = datetime.date.today().strftime("%Y-%m-%d")
+            else:
+                due_date = None
+
             if status == VTODO_STATUS_DONE:
                 column_index = COL_ID_DONE
+            elif due_date and due_date <= today:
+                column_index = COL_ID_TODAY
             else:
                 column_index = COL_ID_TODO
 
