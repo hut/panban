@@ -1,2 +1,6 @@
 *.pyo
 *.pyc
+__pycache__
+
+/.idea
+/additional
