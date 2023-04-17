@@ -122,3 +122,8 @@ class PortableCommand(object):
     @staticmethod
     def from_json(json_data):
         return decode_command(json_data)
+
+    def __repr__(self):
+        return '<%s.%s %s>' % (self.__module__, self.__class__.__name__, self.to_json())
+
+    __str__ = __repr__
