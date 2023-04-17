@@ -16,8 +16,12 @@ COL_ID_TODO = 0
 COL_ID_TODAY = 1
 COL_ID_DONE = 2
 
+SHOW_COMPLETED_ITEMS_FOR_DAYS = 14
+
 VTODO_STATUS_TODO = 'NEEDS-ACTION'
 VTODO_STATUS_DONE = 'COMPLETED'
+
+ISO_DATE = '%Y-%m-%d'
 
 class Handler(panban.api.Handler):
     def response(self, data=None, status=None):
@@ -184,6 +188,13 @@ class Handler(panban.api.Handler):
 
             if status == VTODO_STATUS_DONE:
                 column_index = COL_ID_DONE
+
+                # Hide completed items that are older than N days
+                if 'completed' in vtodo:
+                    completed_day = vtodo['completed'].dt.strftime(ISO_DATE)
+                    cutoff_day = datetime.date.today() - datetime.timedelta(SHOW_COMPLETED_ITEMS_FOR_DAYS)
+                    if completed_day < cutoff_day.strftime(ISO_DATE):
+                        continue
             elif self._is_due_today(vtodo):
                 column_index = COL_ID_TODAY
             else:
