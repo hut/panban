@@ -181,8 +181,8 @@ class Handler(panban.api.Handler):
             uid, vtodo = self._extract_vtodo(path)
             status = str(vtodo.get('status', None))
             if 'due' in vtodo:
-                due_date = vtodo['due'].dt.strftime("%Y-%m-%d")
-                today = datetime.date.today().strftime("%Y-%m-%d")
+                due_date = vtodo['due'].dt.strftime(ISO_DATE)
+                today = datetime.date.today().strftime(ISO_DATE)
             else:
                 due_date = None
 
@@ -275,8 +275,8 @@ class Handler(panban.api.Handler):
     def _is_due_today(self, vtodo):
         if 'due' not in vtodo:
             return None
-        due_date = vtodo['due'].dt.strftime("%Y-%m-%d")
-        today = datetime.date.today().strftime("%Y-%m-%d")
+        due_date = vtodo['due'].dt.strftime(ISO_DATE)
+        today = datetime.date.today().strftime(ISO_DATE)
         return due_date <= today
 
     def make_node(self, uid, label, parent, pos=None, completion_date=None):
