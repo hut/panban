@@ -2,6 +2,8 @@
 
 # Panban
 
+NOTE: This project is a work in progress and is not suitable for general use.
+
 A modular kanban tool with swappable front-ends and database interfaces.  It
 allows you to view various kinds of structured data as a kanban board, with a
 consistent UI.  Currently supported data formats are:
