@@ -108,7 +108,11 @@ class UI(object):
 
     def rebuild(self):
         self.last_rebuild = time.time()
-        self.tabs = self.db.get_root_nodes()
+
+        root_nodes = self.db.get_root_nodes()
+        root_nodes.sort(key=lambda node: node.label)
+        root_nodes.sort(key=lambda node: -(node.prio or 0))
+        self.tabs = root_nodes
         self.kanban_layout.reload()
         self.menu.reload()
 

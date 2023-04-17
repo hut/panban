@@ -130,7 +130,7 @@ class Handler(panban.api.Handler):
         self.node_id_to_path = {}
         self.categories = {}
 
-        def add_category(label, key=None):
+        def add_category(label, key=None, prio=0):
             # use "key" for internal categories where key != label, e.g. "__all"
             if key is None:
                 key = label
@@ -139,7 +139,8 @@ class Handler(panban.api.Handler):
             category_node = self.make_node(
                 uid=category_uid,
                 label=label,
-                parent = None,
+                parent=None,
+                prio=prio,
             )
             self.nodes_by_id[category_node.id] = category_node
 
@@ -173,7 +174,7 @@ class Handler(panban.api.Handler):
             self.categories[key] = category_node
 
         # First of all, add a category that every node will belong to
-        add_category('All Entries', '__all')
+        add_category('All Entries', '__all', 3)
 
         # Then add a node for every ICS file in the directory, along with extra categories
         for filename in ics_files:
@@ -279,11 +280,12 @@ class Handler(panban.api.Handler):
         today = datetime.date.today().strftime(ISO_DATE)
         return due_date <= today
 
-    def make_node(self, uid, label, parent, pos=None, completion_date=None):
+    def make_node(self, uid, label, parent, pos=None, prio=0, completion_date=None):
         pnode = PortableNode()
         pnode.label = label
         pnode.id = uid
         pnode.pos = pos
+        pnode.prio = prio
         pnode.parent = parent
         return pnode
 
