@@ -140,11 +140,6 @@ class EntryButton(urwid.Button):
     def keypress(self, size, key):
         if key == 'X':
             self.entry.delete()
-        if key == 'y':
-            self.ui.deactivate()
-            self.ui.db.sync()
-            self.ui.reactivate()
-            self.ui.reload()
         elif key in '123456789':
             key_int = ord(key) - ord('1')
             tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]
@@ -184,6 +179,11 @@ class Base(urwid.WidgetPlaceholder):
             raise SystemExit(0)
         elif key == 'R':
             self.reload()
+        elif key == 'y':
+            self.ui.deactivate()
+            self.ui.db.sync()
+            self.ui.reactivate()
+            self.ui.reload()
         return super(Base, self).keypress(size, key)  # pylint: disable=not-callable
 
 
