@@ -66,6 +66,7 @@ class Handler(panban.api.Handler):
         dirty = []
 
         # Apply changes
+        now = icalendar.vDatetime(datetime.datetime.now())
         for uid in query.arguments['item_ids']:
             vtodo = self.vtodos_by_id[uid]
             if query.arguments['target_column'].endswith(COL_DONE):
@@ -74,7 +75,7 @@ class Handler(panban.api.Handler):
                 # Make sure that these requirements are met:
                 if str(vtodo.get('status', '')) != VTODO_STATUS_DONE:
                     vtodo['status'] = VTODO_STATUS_DONE
-                    vtodo['completed'] = icalendar.vDatetime(datetime.datetime.now())
+                    vtodo['completed'] = now
                     if vtodo not in dirty: dirty.append(vtodo)
 
             elif query.arguments['target_column'].endswith(COL_TODAY):
@@ -83,7 +84,7 @@ class Handler(panban.api.Handler):
                 # - Not completed yet
                 # Make sure that these requirements are met:
                 if not self._is_due_today(vtodo):
-                    vtodo['due'] = icalendar.vDatetime(datetime.datetime.now())
+                    vtodo['due'] = now
                     if vtodo not in dirty: dirty.append(vtodo)
                 if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
                     vtodo['status'] = VTODO_STATUS_TODO
