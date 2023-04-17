@@ -36,6 +36,7 @@ class Handler(panban.api.Handler):
         return self.response(self.nodes_by_id)
 
     def cmd_moveitemstocolumn(self, query):
+        import icalendar
         ids = query.arguments['item_ids']
         dirty = []
         
@@ -45,7 +46,14 @@ class Handler(panban.api.Handler):
             if query.arguments['target_column'].endswith(COL_DONE):
                 if str(vtodo.get('status', '')) != VTODO_STATUS_DONE:
                     dirty.append(vtodo)
+            elif query.arguments['target_column'].endswith(COL_TODAY):
+                if not self._is_due_today(vtodo):
+                    dirty.append(vtodo)
+                if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
+                    dirty.append(vtodo)
             else:
+                if self._is_due_today(vtodo):
+                    dirty.append(vtodo)
                 if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
                     dirty.append(vtodo)
 
@@ -61,15 +69,36 @@ class Handler(panban.api.Handler):
         for uid in query.arguments['item_ids']:
             vtodo = self.vtodos_by_id[uid]
             if query.arguments['target_column'].endswith(COL_DONE):
+                # Requirements for it to show up in the "Done" column:
+                # - Task completed
+                # Make sure that these requirements are met:
                 if str(vtodo.get('status', '')) != VTODO_STATUS_DONE:
                     vtodo['status'] = VTODO_STATUS_DONE
-                    if vtodo not in dirty:
-                        dirty.append(vtodo)
-            else:
+                    if vtodo not in dirty: dirty.append(vtodo)
+
+            elif query.arguments['target_column'].endswith(COL_TODAY):
+                # Requirements for it to show up in the "Active" column:
+                # - Due today or earlier
+                # - Not completed yet
+                # Make sure that these requirements are met:
+                if not self._is_due_today(vtodo):
+                    vtodo['due'] = icalendar.vDatetime(datetime.datetime.now())
+                    if vtodo not in dirty: dirty.append(vtodo)
                 if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
                     vtodo['status'] = VTODO_STATUS_TODO
-                    if vtodo not in dirty:
-                        dirty.append(vtodo)
+                    if vtodo not in dirty: dirty.append(vtodo)
+
+            else:
+                # Requirements for it to show up in the "Todo" column:
+                # - No due date or due date later than tomorrow
+                # - Not completed yet
+                # Make sure that these requirements are met:
+                if self._is_due_today(vtodo):
+                    del vtodo['due']
+                    if vtodo not in dirty: dirty.append(vtodo)
+                if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
+                    vtodo['status'] = VTODO_STATUS_TODO
+                    if vtodo not in dirty: dirty.append(vtodo)
 
         for vtodo in dirty:
             self._write_vtodo(vtodo)
@@ -148,7 +177,7 @@ class Handler(panban.api.Handler):
 
             if status == VTODO_STATUS_DONE:
                 column_index = COL_ID_DONE
-            elif due_date and due_date <= today:
+            elif self._is_due_today(vtodo):
                 column_index = COL_ID_TODAY
             else:
                 column_index = COL_ID_TODO
@@ -224,6 +253,13 @@ class Handler(panban.api.Handler):
         content = vcalendar.to_ical().decode('utf-8')
         with open(path, 'w') as f:
             f.write(content)
+
+    def _is_due_today(self, vtodo):
+        if 'due' not in vtodo:
+            return None
+        due_date = vtodo['due'].dt.strftime("%Y-%m-%d")
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        return due_date <= today
 
     def make_node(self, uid, label, parent, pos=None, completion_date=None):
         pnode = PortableNode()
