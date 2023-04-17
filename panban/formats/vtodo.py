@@ -341,7 +341,10 @@ class Handler(panban.api.Handler):
                 else:
                     vcalendar.subcomponents.append(vtodo)
         else:
-            vcalendar = vtodo
+            vcalendar = icalendar.Calendar()
+            vcalendar['version'] = '2.0'
+            vcalendar['prodid'] = 'Panban'
+            vcalendar.add_component(vtodo)
 
         content = vcalendar.to_ical().decode('utf-8')
 
