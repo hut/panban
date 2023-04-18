@@ -137,6 +137,10 @@ class EntryButton(urwid.Button):
         if new_label.strip() and old_label != new_label:
             self.entry.change_label(new_label)
 
+        # TODO: This reload/rebuild is excessive and should be handled by updating the cache instead
+        self.ui.db.reload()  # TODO:
+        self.ui.rebuild()
+
     def keypress(self, size, key):
         if key == 'X':
             self.entry.delete()
@@ -145,7 +149,8 @@ class EntryButton(urwid.Button):
             tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]
             column_id = tab.children[key_int]
             self.entry.move_to_column(column_id)
-            self.ui.reload()  # This was added temporarily to fix bad states after moves
+            # TODO: This reload is excessive and should be handled by updating the cache instead
+            self.ui.reload()
         return super(EntryButton, self).keypress(size, key)
 
 
@@ -354,4 +359,6 @@ class ColumnBox(urwid.ListBox):
             new_label = self.ui.edit_string()
             if new_label.strip():
                 self.ui.db.add_node(new_label, self.column.id)
+                # TODO: This rebuild is excessive and should be handled by updating the cache instead
+                self.ui.rebuild()
         return super(ColumnBox, self).keypress(size, key)
