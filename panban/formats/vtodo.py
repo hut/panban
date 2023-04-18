@@ -280,6 +280,7 @@ class Handler(panban.api.Handler):
                 uid=uid,
                 label=str(vtodo['summary']),
                 parent=self.categories[ROOT_CATEGORY].children[column_index],
+                prio=str(-vtodo.get('priority', 0)),
             )
             self.nodes_by_id[uid] = pnode
             self.vtodos_by_id[uid] = vtodo
