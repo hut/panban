@@ -23,6 +23,7 @@ consistent UI.  Currently supported data formats are:
 | l          | move to the column on the right                              |
 | 1-9        | move entry to column N                                       |
 | `ENTER`    | edit entry                                                   |
+| H/J/K/L    | set task priority to 0, 1, 2, or 3 respectively              |
 | + or -     | add/remove "!plate" tag (for what's on your plate right now) |
 | z          | toggle visibility of metadata                                |
 | A          | add new entry                                                |
