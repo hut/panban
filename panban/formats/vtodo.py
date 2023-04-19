@@ -80,7 +80,7 @@ class Handler(panban.api.Handler):
         category_id = column.parent
         if category_id != ROOT_CATEGORY:
             category = self.nodes_by_id[category_id]
-            vtodo['categories'] = category.label
+            vtodo['categories'] = icalendar.prop.vCategory([category.label])
 
         node = self.make_node(
             uid=uid,
