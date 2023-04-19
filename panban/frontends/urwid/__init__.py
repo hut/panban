@@ -5,6 +5,7 @@ import tempfile
 import os
 
 from panban.api import UserFacingException
+from panban.util import extract_urls
 
 VIM_KEYS = {
     'h': 'cursor left',
@@ -102,6 +103,9 @@ class UI(object):
         os.unlink(filename)
         return new_string
 
+    def open_in_browser(self, url):
+        subprocess.Popen(['firefox', url])
+
     def get_entries(self):
         return self.db.get_columns()
 
@@ -156,6 +160,10 @@ class EntryButton(urwid.Button):
     def keypress(self, size, key):
         if key == 'X':
             self.entry.delete()
+        elif key == 'o':
+            urls = extract_urls(self.entry.label)
+            if urls:
+                self.ui.open_in_browser(urls[0])
         elif key == '+':
             self.entry.add_tags(PLATE_TAG)
             # TODO: This reload is excessive and should be handled by updating the cache instead
