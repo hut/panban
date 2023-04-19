@@ -239,10 +239,11 @@ class Node(object):
 
     def change_prio(self, prio):
         assert prio in (0, 1, 2, 3)
-        self.db.command('change_prio', item_id=self.id, prio=prio)
-        self.prio = prio
-        self._update()
-        self.db.last_modification = time.time()
+        if self.prio != prio:
+            self.db.command('change_prio', item_id=self.id, prio=prio)
+            self.prio = prio
+            self._update()
+            self.db.last_modification = time.time()
 
     def add_tags(self, *tags):
         self._change_tags('add', tags)
