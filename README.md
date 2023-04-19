@@ -17,13 +17,10 @@ consistent UI.  Currently supported data formats are:
 
 | key        | action                                                       |
 |------------|--------------------------------------------------------------|
-| j          | move down                                                    |
-| k          | move up                                                      |
-| h          | move to the column on the left                               |
-| l          | move to the column on the right                              |
-| 1-9        | move entry to column N                                       |
+| h/j/k/l    | move left/down/up/right (vim-like keybindings)               |
 | `ENTER`    | edit entry                                                   |
 | p          | edit task priority                                           |
+| 1-9        | move entry to column N                                       |
 | + or -     | add/remove tags                                              |
 | ! or @     | add/remove "!!!" tag                                         |
 | z          | toggle visibility of metadata                                |
