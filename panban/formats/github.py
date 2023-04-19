@@ -33,8 +33,6 @@ class Handler(panban.api.Handler):
             node_id='__root',
             label='all',
             parent=None,
-            pos=0,
-            prio=None
         )
         nodes_by_id[project_node.id] = project_node
 
@@ -42,8 +40,6 @@ class Handler(panban.api.Handler):
             node_id='__todo',
             label='Todo',
             parent=project_node,
-            pos=0,
-            prio=None,
         )
         nodes_by_id[column_todo.id] = column_todo
         project_node.children.append(column_todo.id)
@@ -53,7 +49,6 @@ class Handler(panban.api.Handler):
             label='Active',
             parent=project_node,
             pos=1,
-            prio=None,
         )
         nodes_by_id[column_active.id] = column_active
         project_node.children.append(column_active.id)
@@ -63,7 +58,6 @@ class Handler(panban.api.Handler):
             label='Done',
             parent=project_node,
             pos=2,
-            prio=None,
         )
         nodes_by_id[column_done.id] = column_done
         project_node.children.append(column_done.id)
@@ -81,15 +75,14 @@ class Handler(panban.api.Handler):
                 label=issue['title'],
                 parent=target_column,
                 pos=len(target_column.children),
-                prio=None,
             )
             target_column.children.append(node.id)
             nodes_by_id[node.id] = node
 
         self.nodes_by_id = nodes_by_id
 
-    def make_node(self, node_id, label, parent, pos, prio, creation_date=None,
-                  completion_date=None):
+    def make_node(self, node_id, label, parent, pos=0, prio=0,
+                creation_date=None, completion_date=None):
         if isinstance(parent, PortableNode):
             parent_id = parent.id
         elif isinstance(parent, str):
