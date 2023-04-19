@@ -1,8 +1,10 @@
-import subprocess
-import time
-import urwid
-import tempfile
 import os
+import re
+import subprocess
+import tempfile
+import time
+
+import urwid
 
 from panban.api import UserFacingException
 from panban.util import extract_urls
@@ -49,6 +51,7 @@ class UI(object):
         self.loop = None
         self.debug = debug
         self.initial_tab = initial_tab
+        self.filter_regex = None
 
         self.menu = MenuBox(self)
         self.prio_menu = PrioMenuBox(self)
@@ -234,6 +237,12 @@ class Base(urwid.WidgetPlaceholder):
             raise SystemExit(0)
         elif key == 'R':
             self.reload()
+        elif key == '/':
+            self.ui.filter_regex = self.ui.edit_string('')
+            self.ui.rebuild()
+        elif key == '?':
+            self.ui.filter_regex = None
+            self.ui.rebuild()
         elif key == 'y':
             self.ui.deactivate()
             self.ui.db.sync()
@@ -426,6 +435,11 @@ class ColumnBox(urwid.ListBox):
         done = self.label.lower() in ('finished', 'done')
         active = self.label.lower() in ('active', )
         nodes = list(column.getChildrenNodes())
+
+        if self.ui.filter_regex:
+            filter_regex = re.compile(self.ui.filter_regex, flags=re.I)
+            nodes = [node for node in nodes if filter_regex.search(node.label)]
+
         nodes.sort(key=lambda node: node.label)
         if done:
             nodes.sort(key=lambda node: node.completion_date or '0000-00-00')
