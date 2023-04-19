@@ -39,6 +39,7 @@ PRIO_LABELS = {
 }
 
 PLATE_TAG = '!plate'  # added/removed with +/- keys to "put items on/off your plate"
+IMPORTANT_TAG = '!!!'  # added/removed with !/@ keys for important but not urgent tasks
 
 
 class UI(object):
@@ -161,6 +162,14 @@ class EntryButton(urwid.Button):
             self.ui.reload()
         elif key == '-':
             self.entry.remove_tags(PLATE_TAG)
+            # TODO: This reload is excessive and should be handled by updating the cache instead
+            self.ui.reload()
+        elif key == '!':
+            self.entry.add_tags(IMPORTANT_TAG)
+            # TODO: This reload is excessive and should be handled by updating the cache instead
+            self.ui.reload()
+        elif key == '@':
+            self.entry.remove_tags(IMPORTANT_TAG)
             # TODO: This reload is excessive and should be handled by updating the cache instead
             self.ui.reload()
         elif key == 'p':

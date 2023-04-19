@@ -25,6 +25,7 @@ consistent UI.  Currently supported data formats are:
 | `ENTER`    | edit entry                                                   |
 | p          | edit task priority                                           |
 | + or -     | add/remove "!plate" tag (for what's on your plate right now) |
+| ! or @     | add/remove "!!!" tag (for important but not urgent tasks)    |
 | z          | toggle visibility of metadata                                |
 | A          | add new entry                                                |
 | X          | delete entry                                                 |
