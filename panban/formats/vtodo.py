@@ -24,6 +24,13 @@ ROOT_CATEGORY = '__all'
 
 VTODO_STATUS_TODO = 'NEEDS-ACTION'
 VTODO_STATUS_DONE = 'COMPLETED'
+VTODO_PRIO_MAP = {
+    0: None,
+    1: 9,
+    2: 5,
+    3: 1,
+}
+VTODO_PRIO_MAP_REVERSE = dict((val, key) for (key, val) in VTODO_PRIO_MAP.items())
 
 ISO_DATE = '%Y-%m-%d'
 
@@ -52,6 +59,23 @@ class Handler(panban.api.Handler):
         new_label = query.arguments['new_label']
         if old_label != new_label:
             vtodo['summary'] = new_label
+            self._write_vtodo(vtodo)
+
+        return self.response()
+
+    def cmd_changeprio(self, query):
+        self.load_data(query.source)
+
+        uid = query.arguments['item_id']
+        vtodo = self.vtodos_by_id[uid]
+        old_value = vtodo.get('priority', None)
+        new_value_raw = query.arguments['prio']
+        new_value = VTODO_PRIO_MAP[new_value_raw]
+        if old_value != new_value:
+            if new_value is None:
+                del vtodo['priority']
+            else:
+                vtodo['priority'] = new_value
             self._write_vtodo(vtodo)
 
         return self.response()
@@ -314,7 +338,7 @@ class Handler(panban.api.Handler):
                 uid=uid,
                 label=str(vtodo['summary']),
                 parent=self.categories[ROOT_CATEGORY].children[column_index],
-                prio=str(-vtodo.get('priority', 0)),
+                prio=VTODO_PRIO_MAP_REVERSE[vtodo.get('priority', None)],
             )
             self.nodes_by_id[uid] = pnode
             self.vtodos_by_id[uid] = vtodo
@@ -412,6 +436,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_deleteitems(query)
         elif command == 'change_label':
             response = self.cmd_changelabel(query)
+        elif command == 'change_prio':
+            response = self.cmd_changeprio(query)
         elif command == 'change_tags':
             response = self.cmd_changetags(query)
         elif command == 'add_node':

@@ -10,6 +10,7 @@ VALID_COMMANDS = [
     'load_all',
     'move_nodes',
     'change_label',
+    'change_prio',
     'change_tags',
     'delete_nodes',
     'add_node',

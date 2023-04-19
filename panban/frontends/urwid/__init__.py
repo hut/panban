@@ -154,6 +154,14 @@ class EntryButton(urwid.Button):
             self.entry.remove_tags(PLATE_TAG)
             # TODO: This reload is excessive and should be handled by updating the cache instead
             self.ui.reload()
+        elif key == 'H':
+            self.entry.change_prio(0)
+        elif key == 'J':
+            self.entry.change_prio(1)
+        elif key == 'K':
+            self.entry.change_prio(2)
+        elif key == 'L':
+            self.entry.change_prio(3)
         elif key in '123456789':
             key_int = ord(key) - ord('1')
             tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]
@@ -336,7 +344,7 @@ class ColumnBox(urwid.ListBox):
         elif active:
             pass
         else:
-            nodes.sort(key=lambda node: node.prio or '[')
+            nodes.sort(key=lambda node: -(node.prio or 0))
 
         previous_group = None
         if done:
