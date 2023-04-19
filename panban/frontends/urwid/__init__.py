@@ -193,6 +193,7 @@ class Base(urwid.WidgetPlaceholder):
     def flip(self):
         if self.original_widget == self.content_widget:
             self.original_widget = self.overlay_widget
+            self.menu_widget.focus_category(self.ui.kanban_layout.active_tab_nr)
         else:
             self.original_widget = self.content_widget
 
@@ -229,6 +230,10 @@ class MenuBox(urwid.ListBox):
         self.ui = ui
         self.list_walker = urwid.SimpleFocusListWalker([])
         super(MenuBox, self).__init__(self.list_walker)
+
+    def focus_category(self, category_index):
+        # category_index is literally the position of the category in the list
+        return self.list_walker.set_focus(category_index)
 
     def reload(self):
         focus = self.list_walker.focus
@@ -354,6 +359,7 @@ class KanbanLayout(urwid.Columns):
         for i, tab in enumerate(self.ui.tabs):
             if tab.id == node_id:
                 self.active_tab_nr = i
+                self.active_tab_node_id = node_id
                 break
         self.ui.rebuild()
 
