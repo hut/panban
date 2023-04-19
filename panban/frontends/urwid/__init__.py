@@ -148,9 +148,9 @@ class EntryButton(urwid.Button):
         if new_label.strip() and old_label != new_label:
             self.entry.change_label(new_label)
 
-        # TODO: This reload/rebuild is excessive and should be handled by updating the cache instead
-        self.ui.db.reload()  # TODO:
-        self.ui.rebuild()
+            # TODO: This reload/rebuild is excessive and should be handled by updating the cache instead
+            self.ui.db.reload()  # TODO:
+            self.ui.rebuild()
 
     def keypress(self, size, key):
         if key == 'X':
