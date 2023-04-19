@@ -41,7 +41,7 @@ PRIO_LABELS = {
     0: '0: None',
 }
 
-PLATE_TAG = '!plate'  # added/removed with +/- keys to "put items on/off your plate"
+PLATE_TAG = '@plate'  # added/removed with +/- keys to "put items on/off your plate"
 IMPORTANT_TAG = '!!!'  # added/removed with !/@ keys for important but not urgent tasks
 
 
