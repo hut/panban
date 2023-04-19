@@ -83,6 +83,7 @@ def decode_node(json_data):
             setattr(node, key, json_data[key])
     return node
 
+
 def encode_node(label, id, children, parent, pos, prio, tags, creation_date, completion_date, attrs):
     response = {
         'label': label,
@@ -113,6 +114,7 @@ def encode_response(status, data=None, features=None):
         response['data'] = data
     return json.dumps(response, cls=JSONEncoder)
 
+
 def decode_response(json_data):
     if isinstance(json_data, str):
         json_data = json.loads(json_data)
@@ -127,6 +129,7 @@ def decode_response(json_data):
     response = eternal.PortableResponse(version, status, features, data)
     return response
 
+
 def validate_request(command):
     if not command.command:
         raise NoCommandError()
@@ -134,8 +137,10 @@ def validate_request(command):
     if command.command not in VALID_COMMANDS:
         raise InvalidCommandError(command.command)
 
+
 def validate_response(json):
     pass
+
 
 def delete_item_ids(json, item_ids):
     def recursively_delete(node, ids):
@@ -150,6 +155,7 @@ def delete_item_ids(json, item_ids):
     for node in json:
         recursively_delete(node, item_ids)
 
+
 def delete_node_ids(nodes_by_id, node_ids):
     for node_id in node_ids:
         if node_id in nodes_by_id:
@@ -159,6 +165,7 @@ def delete_node_ids(nodes_by_id, node_ids):
         for node in nodes_by_id.values():
             while node_id in node.children:
                 node.children.remove(node_id)
+
 
 def move_node_ids_to_column(nodes_by_id, node_ids, target_column_id):
     target = nodes_by_id[target_column_id]
