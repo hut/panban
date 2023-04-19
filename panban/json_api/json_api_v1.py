@@ -79,7 +79,7 @@ def decode_node(json_data):
     node = eternal.PortableNode()
     for key in ('label', 'id', 'parent', 'pos', 'prio', 'children',
             'creation_date', 'completion_date'):
-        if key in json_data and json_data[key]:
+        if key in json_data:
             setattr(node, key, json_data[key])
     return node
 
