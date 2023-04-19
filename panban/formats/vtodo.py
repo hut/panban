@@ -339,6 +339,7 @@ class Handler(panban.api.Handler):
                 label=str(vtodo['summary']),
                 parent=self.categories[ROOT_CATEGORY].children[column_index],
                 prio=VTODO_PRIO_MAP_REVERSE[vtodo.get('priority', None)],
+                tags=categories,
             )
             self.nodes_by_id[uid] = pnode
             self.vtodos_by_id[uid] = vtodo
@@ -417,12 +418,13 @@ class Handler(panban.api.Handler):
         today = datetime.date.today().strftime(ISO_DATE)
         return due_date <= today
 
-    def make_node(self, uid, label, parent, pos=None, prio=0, completion_date=None):
+    def make_node(self, uid, label, parent, pos=None, prio=0, tags=None, completion_date=None):
         pnode = PortableNode()
         pnode.label = label
         pnode.id = uid
         pnode.pos = pos
         pnode.prio = prio
+        pnode.tags = tags or []
         pnode.parent = parent
         return pnode
 

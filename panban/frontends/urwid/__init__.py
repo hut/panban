@@ -144,7 +144,7 @@ class EntryButton(urwid.Button):
         self.ui = ui
         self.entry = entry
         if not self.ui.kanban_layout.hide_metadata:
-            label = "{0.label} [prio={0.prio} id={1} create={0.creation_date} complete={0.completion_date}]".format(entry, entry.id[:8])
+            label = "{0.label} [prio={0.prio} id={1} tags={2} create={0.creation_date} complete={0.completion_date}]".format(entry, entry.id[:8], ','.join(entry.tags or ('None', )))
         else:
             label = entry.label
         super(EntryButton, self).__init__(label)
