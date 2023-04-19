@@ -24,8 +24,8 @@ consistent UI.  Currently supported data formats are:
 | 1-9        | move entry to column N                                       |
 | `ENTER`    | edit entry                                                   |
 | p          | edit task priority                                           |
-| + or -     | add/remove "!plate" tag (for what's on your plate right now) |
-| ! or @     | add/remove "!!!" tag (for important but not urgent tasks)    |
+| + or -     | add/remove tags                                              |
+| ! or @     | add/remove "!!!" tag                                         |
 | z          | toggle visibility of metadata                                |
 | /          | filter entries by regex                                      |
 | ?          | reset filter                                                 |

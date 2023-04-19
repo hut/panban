@@ -168,10 +168,22 @@ class EntryButton(urwid.Button):
             if urls:
                 self.ui.open_in_browser(urls[0])
         elif key == '+':
+            tag = self.ui.edit_string('')
+            if tag:
+                self.entry.add_tags(tag)
+                # TODO: This reload is excessive and should be handled by updating the cache instead
+                self.ui.reload()
+        elif key == '-':
+            tag = self.ui.edit_string('')
+            if tag:
+                self.entry.remove_tags(tag)
+                # TODO: This reload is excessive and should be handled by updating the cache instead
+                self.ui.reload()
+        elif key == '#':
             self.entry.add_tags(PLATE_TAG)
             # TODO: This reload is excessive and should be handled by updating the cache instead
             self.ui.reload()
-        elif key == '-':
+        elif key == '$':
             self.entry.remove_tags(PLATE_TAG)
             # TODO: This reload is excessive and should be handled by updating the cache instead
             self.ui.reload()
