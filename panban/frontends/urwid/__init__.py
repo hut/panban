@@ -31,6 +31,12 @@ PALETTE = [
     ('heading_Finished', 'black', 'dark green'),
     ('heading_Urgent', 'black', 'light magenta'),
 ]
+PRIO_LABELS = {
+    3: '3: High',
+    2: '2: Medium',
+    1: '1: Low',
+    0: '0: None',
+}
 
 PLATE_TAG = '!plate'  # added/removed with +/- keys to "put items on/off your plate"
 
@@ -43,8 +49,9 @@ class UI(object):
         self.initial_tab = initial_tab
 
         self.menu = MenuBox(self)
+        self.prio_menu = PrioMenuBox(self)
         self.kanban_layout = KanbanLayout(self)
-        self.base = Base(self, db, self.kanban_layout, self.menu)
+        self.base = Base(self, db, self.kanban_layout, self.menu, self.prio_menu)
         self.tabs = None
 
         self._original_urwid_SHOW_CURSOR = urwid.escape.SHOW_CURSOR
@@ -156,14 +163,8 @@ class EntryButton(urwid.Button):
             self.entry.remove_tags(PLATE_TAG)
             # TODO: This reload is excessive and should be handled by updating the cache instead
             self.ui.reload()
-        elif key == ')':
-            self.entry.change_prio(0)
-        elif key == '!':
-            self.entry.change_prio(1)
-        elif key == '@':
-            self.entry.change_prio(2)
-        elif key == '#':
-            self.entry.change_prio(3)
+        elif key == 'p':
+            self.ui.base.flip_prio(self.entry)
         elif key in '123456789':
             key_int = ord(key) - ord('1')
             tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]
@@ -175,21 +176,32 @@ class EntryButton(urwid.Button):
 
 
 class Base(urwid.WidgetPlaceholder):
-    def __init__(self, ui, db, content, menu):
+    def __init__(self, ui, db, content, menu, prio_menu):
         super(Base, self).__init__(content)
         self.content_widget = content
         self.menu_widget = menu
         self.ui = ui
         self.db = db
+        self.prio_widget = prio_menu
         self.overlay_widget = urwid.Overlay(
             urwid.LineBox(self.menu_widget),
             content, 'center', 50, 'middle', 30)
+        self.overlay_widget_prio = urwid.Overlay(
+            urwid.LineBox(self.prio_widget),
+            content, 'center', 20, 'middle', 6)
 
     def flip(self):
         if self.original_widget == self.content_widget:
             self.original_widget = self.overlay_widget
         else:
             self.original_widget = self.content_widget
+
+    def flip_prio(self, node):
+        if self.original_widget == self.overlay_widget_prio:
+            self.original_widget = self.content_widget
+        else:
+            self.original_widget = self.overlay_widget_prio
+            self.prio_widget.update_node(node)
 
     def reload(self):
         self.db.reload()
@@ -240,6 +252,54 @@ class MenuButton(urwid.Button):
     def click(self):
         self.ui.kanban_layout.change_tab_by_node_id(self.node_id)
         self.ui.base.flip()
+
+
+class PrioMenuBox(urwid.ListBox):
+    def __init__(self, ui):
+        self.ui = ui
+        self.list_walker = urwid.SimpleFocusListWalker([])
+        self.node = None
+        self.list_walker[:] = []
+        for prio, label in PRIO_LABELS.items():
+            button = PrioMenuButton(self, self.ui, label, prio)
+            urwid.connect_signal(button, 'click',
+                    lambda button: button.click())
+            button = urwid.AttrMap(button, 'button', 'focus button')
+            self.list_walker.append(button)
+        super(PrioMenuBox, self).__init__(self.list_walker)
+
+    def keypress(self, size, key):
+        if key in ('tab', 'q', 'p'):
+            self.ui.base.flip()
+        if key in ('1', '2', '3', '0'):
+            self._set_prio(int(key))
+        return super(PrioMenuBox, self).keypress(size, key)  # pylint: disable=not-callable
+
+    def _set_prio(self, prio):
+        self.node.change_prio(prio)
+        self.ui.base.flip()
+
+    def update_node(self, node):
+        self.node = node
+        if node.prio == 0:
+            self.list_walker.set_focus(3)
+        elif node.prio == 1:
+            self.list_walker.set_focus(2)
+        elif node.prio == 2:
+            self.list_walker.set_focus(1)
+        else:
+            self.list_walker.set_focus(0)
+
+
+class PrioMenuButton(urwid.Button):
+    def __init__(self, menu, ui, label, target_prio):
+        super(PrioMenuButton, self).__init__(label)
+        self.ui = ui
+        self.menu = menu
+        self.target_prio = target_prio
+
+    def click(self):
+        self.menu._set_prio(self.target_prio)
 
 
 class KanbanLayout(urwid.Columns):
