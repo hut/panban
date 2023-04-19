@@ -12,7 +12,9 @@ VIM_KEYS = {
     'j': 'cursor down',
     'k': 'cursor up',
     'd': 'cursor page down',
+    'J': 'cursor page down',
     'u': 'cursor page up',
+    'K': 'cursor page up',
     'g': 'cursor max left',
     'G': 'cursor max right',
 }
