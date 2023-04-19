@@ -19,6 +19,7 @@ COL_ID_DONE = 2
 
 SHOW_COMPLETED_ITEMS_FOR_DAYS = 14
 
+CATEGORY_PREFIX = '__category_'
 ROOT_CATEGORY = '__all'
 
 VTODO_STATUS_TODO = 'NEEDS-ACTION'
@@ -111,7 +112,7 @@ class Handler(panban.api.Handler):
 
         # Set tag
         category_id = column.parent
-        if category_id != ROOT_CATEGORY:
+        if category_id != (CATEGORY_PREFIX + ROOT_CATEGORY):
             category = self.nodes_by_id[category_id]
             vtodo['categories'] = icalendar.prop.vCategory([category.label])
 
@@ -237,7 +238,7 @@ class Handler(panban.api.Handler):
             if key is None:
                 key = label
 
-            category_uid = '__category_' + key
+            category_uid = CATEGORY_PREFIX + key
             category_node = self.make_node(
                 uid=category_uid,
                 label=label,
