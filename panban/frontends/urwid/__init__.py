@@ -154,13 +154,13 @@ class EntryButton(urwid.Button):
             self.entry.remove_tags(PLATE_TAG)
             # TODO: This reload is excessive and should be handled by updating the cache instead
             self.ui.reload()
-        elif key == 'H':
+        elif key == ')':
             self.entry.change_prio(0)
-        elif key == 'J':
+        elif key == '!':
             self.entry.change_prio(1)
-        elif key == 'K':
+        elif key == '@':
             self.entry.change_prio(2)
-        elif key == 'L':
+        elif key == '#':
             self.entry.change_prio(3)
         elif key in '123456789':
             key_int = ord(key) - ord('1')
