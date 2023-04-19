@@ -144,10 +144,10 @@ class Handler(panban.api.Handler):
         >>> isinstance(nodes, dict)
         True
         >>> len(nodes)
-        25
+        32
         >>> roots = [n for n in nodes.values() if not n.parent]
-        >>> len(roots)  # 1 unfiltered root + 2 roots filtering by project
-        3
+        >>> len(roots)  # 1 unfiltered + 2 filtering by project + 1 filter for no project
+        4
         >>> root = roots[0]
         >>> columns = [n for n in nodes.values() if n.parent == root.id]
         >>> len(columns)
