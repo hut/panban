@@ -217,7 +217,7 @@ class Base(urwid.WidgetPlaceholder):
         self.prio_widget = prio_menu
         self.overlay_widget = urwid.Overlay(
             urwid.LineBox(self.menu_widget),
-            content, 'center', 50, 'middle', 30)
+            content, 'center', 23, 'middle', 23)
         self.overlay_widget_prio = urwid.Overlay(
             urwid.LineBox(self.prio_widget),
             content, 'center', 20, 'middle', 6)
