@@ -244,6 +244,8 @@ class MenuBox(urwid.ListBox):
 
 
 class MenuButton(urwid.Button):
+    button_left = urwid.Text("")
+    button_right = urwid.Text("")
     def __init__(self, ui, label, node_id):
         super(MenuButton, self).__init__(label)
         self.ui = ui
@@ -292,6 +294,8 @@ class PrioMenuBox(urwid.ListBox):
 
 
 class PrioMenuButton(urwid.Button):
+    button_left = urwid.Text("")
+    button_right = urwid.Text("")
     def __init__(self, menu, ui, label, target_prio):
         super(PrioMenuButton, self).__init__(label)
         self.ui = ui
