@@ -164,6 +164,7 @@ class Node(object):
         node.children = portable_node.children
         node.parent = portable_node.parent
         node.prio = portable_node.prio
+        node.tags = portable_node.tags
         node.creation_date = portable_node.creation_date
         node.completion_date = portable_node.completion_date
         node._raw_json = portable_node._raw_json
@@ -234,6 +235,39 @@ class Node(object):
         self.label = new_label
         self._update()
         self.db.last_modification = time.time()  # TODO: doesn't refresh view?
+        return True
+
+    def add_tags(self, *tags):
+        self._change_tags('add', tags)
+
+    def remove_tags(self, *tags):
+        self._change_tags('remove', tags)
+
+    def clear_tags(self):
+        self._change_tags('clear', [])
+
+    def _change_tags(self, action, tags):
+        param_table = {
+                'add': self.db.json_api.PARAM_TAG_ADD,
+                'remove': self.db.json_api.PARAM_TAG_REMOVE,
+                'clear': self.db.json_api.PARAM_TAG_CLEAR,
+        }
+        self.db.command('change_tags', item_id=self.id, tags=tags,
+                action=param_table[action])
+
+        if action == 'add':
+            for tag in tags:
+                if tag not in self.tags:
+                    self.tags.append(tag)
+        elif action == 'remove':
+            for tag in tags:
+                if tag in self.tags:
+                    self.tags.remove(tag)
+        elif action == 'clear':
+            new_value = []
+
+        self._update()
+        self.db.last_modification = time.time()
         return True
 
     def _update(self):

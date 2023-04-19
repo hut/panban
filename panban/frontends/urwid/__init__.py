@@ -30,6 +30,8 @@ PALETTE = [
     ('heading_Urgent', 'black', 'light magenta'),
 ]
 
+PLATE_TAG = '!plate'  # added/removed with +/- keys to "put items on/off your plate"
+
 
 class UI(object):
     def __init__(self, db, initial_tab=None, debug=False):
@@ -144,6 +146,14 @@ class EntryButton(urwid.Button):
     def keypress(self, size, key):
         if key == 'X':
             self.entry.delete()
+        elif key == '+':
+            self.entry.add_tags(PLATE_TAG)
+            # TODO: This reload is excessive and should be handled by updating the cache instead
+            self.ui.reload()
+        elif key == '-':
+            self.entry.remove_tags(PLATE_TAG)
+            # TODO: This reload is excessive and should be handled by updating the cache instead
+            self.ui.reload()
         elif key in '123456789':
             key_int = ord(key) - ord('1')
             tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]

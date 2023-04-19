@@ -10,10 +10,15 @@ VALID_COMMANDS = [
     'load_all',
     'move_nodes',
     'change_label',
+    'change_tags',
     'delete_nodes',
     'add_node',
     'sync',
 ]
+
+PARAM_TAG_ADD = 'add'
+PARAM_TAG_REMOVE = 'remove'
+PARAM_TAG_CLEAR = 'clear'
 
 VALID_FEATURES = [
     # The feature "autogenerate_node_ids" updates the IDs of nodes by applying
@@ -77,7 +82,7 @@ def decode_node(json_data):
             setattr(node, key, json_data[key])
     return node
 
-def encode_node(label, id, children, parent, pos, prio, creation_date, completion_date, attrs):
+def encode_node(label, id, children, parent, pos, prio, tags, creation_date, completion_date, attrs):
     response = {
         'label': label,
         'id': id,
@@ -87,6 +92,7 @@ def encode_node(label, id, children, parent, pos, prio, creation_date, completio
         'creation_date': creation_date,
         'completion_date': completion_date,
         'prio': prio,
+        'tags': tags,
         'attrs': attrs,
     }
     try:

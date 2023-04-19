@@ -44,6 +44,7 @@ class PortableNode(object):
         self.parent = None
         self.pos = None
         self.prio = None
+        self.tags = []
         self.creation_date = None
         self.completion_date = None
         self.attrs = {}
@@ -67,6 +68,7 @@ class PortableNode(object):
             children=self.children,
             parent=self.parent,
             prio=self.prio,
+            tags=self.tags,
             pos=self.pos,
             creation_date=self.creation_date,
             completion_date=self.completion_date,

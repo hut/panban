@@ -55,6 +55,39 @@ class Handler(panban.api.Handler):
 
         return self.response()
 
+    def cmd_changetags(self, query):
+        import icalendar
+
+        # Extract relevant data from query and cache
+        self.load_data(query.source)
+        uid = query.arguments['item_id']
+        vtodo = self.vtodos_by_id[uid]
+        if 'categories' in vtodo:
+            old_value = [str(cat) for cat in vtodo['categories'].cats]
+        else:
+            old_value = []
+        new_value = list(old_value)
+        target_tags = query.arguments['tags']
+        action = query.arguments['action']
+
+        # Apply the requested action
+        if action == self.json_api.PARAM_TAG_ADD:
+            for tag in target_tags:
+                if tag not in new_value:
+                    new_value.append(tag)
+        elif action == self.json_api.PARAM_TAG_REMOVE:
+            for tag in target_tags:
+                if tag in new_value:
+                    new_value.remove(tag)
+        elif action == self.json_api.PARAM_TAG_CLEAR:
+            new_value = []
+
+        if old_value != new_value:
+            vtodo['categories'] = icalendar.prop.vCategory(new_value)
+            self._write_vtodo(vtodo)
+
+        return self.response()
+
     def cmd_addnode(self, query):
         import icalendar
 
@@ -378,6 +411,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_deleteitems(query)
         elif command == 'change_label':
             response = self.cmd_changelabel(query)
+        elif command == 'change_tags':
+            response = self.cmd_changetags(query)
         elif command == 'add_node':
             response = self.cmd_addnode(query)
         elif command == 'sync':
