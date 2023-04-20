@@ -39,6 +39,18 @@ with `R` after every operation.
 
 # How to run
 
+First download panban and install the dependencies:
+
+```
+git clone https://codeberg.org/hut/panban.git
+pip install urwid  # required
+pip install icalendar  # optional, for VTODO backend
+pip install todotxtio  # optional, for todo.txt backend
+cd panban
+```
+
+Then you can try out the desired backend with the provided demo database:
+
 - `./panban.py -b todotxt test/todo.txt`
 - `./panban.py -b markdown test/markdown.md`
 - `./panban.py -b vtodo test/vtodo`
