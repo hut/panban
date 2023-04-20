@@ -108,7 +108,10 @@ class Handler(panban.api.Handler):
             new_value = []
 
         if old_value != new_value:
-            vtodo['categories'] = icalendar.prop.vCategory(new_value)
+            if not new_value:
+                del vtodo['categories']
+            else:
+                vtodo['categories'] = icalendar.prop.vCategory(new_value)
             self._write_vtodo(vtodo)
 
         return self.response()
