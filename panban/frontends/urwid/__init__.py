@@ -124,7 +124,8 @@ class UI(object):
         self.base._open_choice_popup()
 
     def user_choice_addtag(self, node, exit_key=None):
-        options = [CHOICE_ABORT] + self.db.all_tags + [CHOICE_NEW_TAG]
+        possible_new_tags = list(sorted(set(self.db.all_tags) - set(node.tags)))
+        options = [CHOICE_ABORT] + possible_new_tags + [CHOICE_NEW_TAG]
         self.user_choice(
             options=options,
             callback=self._user_choice_addtag_callback,
