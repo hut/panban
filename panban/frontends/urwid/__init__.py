@@ -44,6 +44,8 @@ PRIO_LABELS = {
 PLATE_TAG = '@plate'  # added/removed with +/- keys to "put items on/off your plate"
 IMPORTANT_TAG = '!!!'  # added/removed with !/@ keys for important but not urgent tasks
 
+CHOICE_ABORT = '[Cancel]'
+
 
 class UI(object):
     def __init__(self, db, initial_tab=None, debug=False):
@@ -121,6 +123,21 @@ class UI(object):
         self._choice_exit_key = exit_key
         self.base._open_choice_popup()
 
+    def user_choice_removetag(self, node, exit_key=None):
+        options = [CHOICE_ABORT] + node.tags
+        self.user_choice(
+            options=options,
+            callback=self._user_choice_removetag_callback,
+            exit_key=exit_key,
+            callback_params=[node],
+        )
+
+    def _user_choice_removetag_callback(self, choice, node):
+        if choice != CHOICE_ABORT:
+            node.remove_tags(choice)
+            # TODO: This reload is excessive and should be handled by updating the cache instead
+            self.reload()
+
     def open_in_browser(self, url):
         subprocess.Popen(['firefox', url])
 
@@ -189,11 +206,8 @@ class EntryButton(urwid.Button):
                 # TODO: This reload is excessive and should be handled by updating the cache instead
                 self.ui.reload()
         elif key == '-':
-            tag = self.ui.edit_string('')
-            if tag:
-                self.entry.remove_tags(tag)
-                # TODO: This reload is excessive and should be handled by updating the cache instead
-                self.ui.reload()
+            # NOTE: if you change the key for this binding, update exit_key:
+            self.ui.user_choice_removetag(self.entry, exit_key='-')
         elif key == '#':
             self.entry.add_tags(PLATE_TAG)
             # TODO: This reload is excessive and should be handled by updating the cache instead
