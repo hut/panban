@@ -53,9 +53,9 @@ Then you can try out the desired backend with the provided demo database.
 
 KEEP A BACKUP OF YOUR DATABASE. PANBAN IS STILL A WORK IN PROGRESS AND MAY CAUSE DATA LOSS
 
-- `./panban.py -b todotxt test/todo.txt`
-- `./panban.py -b markdown test/markdown.md`
-- `./panban.py -b caldav test/caldav`
+- `./panban.py -b todotxt demos/todotxt/todo.txt`
+- `./panban.py -b markdown demos/markdown/markdown.md`
+- `./panban.py -b caldav demos/caldav`
 
 You can also use this to view github issues (read-only):
 

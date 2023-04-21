@@ -139,7 +139,7 @@ class Handler(panban.api.Handler):
     def load_data(self, filename):
         """
         >>> h = Handler(json_api='1')
-        >>> h.load_data("test/todo.txt")
+        >>> h.load_data("demos/todotxt/todo.txt")
         >>> nodes = h.nodes_by_id
         >>> isinstance(nodes, dict)
         True

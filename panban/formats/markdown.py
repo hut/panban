@@ -52,7 +52,7 @@ class Handler(panban.api.Handler):
     def load_markdown(self, filename):
         """
         >>> h = Handler(json_api='1')
-        >>> nodes = h.load_markdown("test/markdown.md")
+        >>> nodes = h.load_markdown("demos/markdown/markdown.md")
         >>> isinstance(nodes, dict)
         True
         >>> len(nodes)
