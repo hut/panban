@@ -33,6 +33,7 @@ VTODO_PRIO_MAP = {
 VTODO_PRIO_MAP_REVERSE = dict((val, key) for (key, val) in VTODO_PRIO_MAP.items())
 
 ISO_DATE = '%Y-%m-%d'
+TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 class Handler(panban.api.Handler):
     def response(self, data=None, status=None):
@@ -337,12 +338,23 @@ class Handler(panban.api.Handler):
             else:
                 categories = []
 
+            if 'created' in vtodo:
+                creation_date = vtodo['created'].dt.strftime(TIME_FORMAT)
+            else:
+                creation_date = None
+            if 'completed' in vtodo:
+                completion_date = vtodo['completed'].dt.strftime(TIME_FORMAT)
+            else:
+                completion_date = None
+
             pnode = self.make_node(
                 uid=uid,
                 label=str(vtodo['summary']),
                 parent=self.categories[ROOT_CATEGORY].children[column_index],
                 prio=VTODO_PRIO_MAP_REVERSE[vtodo.get('priority', None)],
                 tags=categories,
+                creation_date=creation_date,
+                completion_date=completion_date,
             )
             self.nodes_by_id[uid] = pnode
             self.vtodos_by_id[uid] = vtodo
@@ -421,13 +433,15 @@ class Handler(panban.api.Handler):
         today = datetime.date.today().strftime(ISO_DATE)
         return due_date <= today
 
-    def make_node(self, uid, label, parent, pos=None, prio=0, tags=None, completion_date=None):
+    def make_node(self, uid, label, parent, pos=None, prio=0, tags=None, creation_date=None, completion_date=None):
         pnode = PortableNode()
         pnode.label = label
         pnode.id = uid
         pnode.pos = pos
         pnode.prio = prio
         pnode.tags = tags or []
+        pnode.creation_date = creation_date
+        pnode.completion_date = completion_date
         pnode.parent = parent
         return pnode
 

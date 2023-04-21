@@ -461,9 +461,12 @@ class ColumnBox(urwid.ListBox):
         else:
             nodes.sort(key=lambda node: -(node.prio or 0))
 
+        def extract_day(node):
+            return (node.completion_date or '')[:10]
+
         previous_group = None
         if done:
-            grouper = lambda node: node.completion_date
+            grouper = extract_day
         elif active:
             grouper = None
         else:

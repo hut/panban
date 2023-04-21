@@ -1,13 +1,13 @@
+from panban.formats import caldav
 from panban.formats import github
 from panban.formats import markdown
 from panban.formats import todotxt
-from panban.formats import vtodo
 
 ALL_BACKENDS = {
+    'caldav': caldav,
+    'github': github,
     'markdown': markdown,
     'todotxt': todotxt,
-    'github': github,
-    'vtodo': vtodo,
 }
 
 DEFAULT_BACKEND = 'markdown'

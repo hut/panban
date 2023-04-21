@@ -11,7 +11,7 @@ consistent UI.  Currently supported data formats are:
 - Markdown lists (read+write)
 - todo.txt (read+write)
 - GitHub issues (read only)
-- VTODO (CalDAV tasks, synced via e.g. vdirsyncer) (read+write)
+- CalDav VTODO Tasks, synced via e.g. [vdirsyncer](https://github.com/pimutils/vdirsyncer) (read+write)
 
 # Key bindings
 
@@ -44,7 +44,7 @@ First download panban and install the dependencies:
 ```
 git clone https://codeberg.org/hut/panban.git
 pip install urwid  # required
-pip install icalendar  # optional, for VTODO backend
+pip install icalendar  # optional, for CalDav VTODO backend
 pip install todotxtio  # optional, for todo.txt backend
 cd panban
 ```
@@ -55,7 +55,7 @@ KEEP A BACKUP OF YOUR DATABASE. PANBAN IS STILL A WORK IN PROGRESS AND MAY CAUSE
 
 - `./panban.py -b todotxt test/todo.txt`
 - `./panban.py -b markdown test/markdown.md`
-- `./panban.py -b vtodo test/vtodo`
+- `./panban.py -b caldav test/caldav`
 
 You can also use this to view github issues (read-only):
 
