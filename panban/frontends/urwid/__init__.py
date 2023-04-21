@@ -41,9 +41,6 @@ PRIO_LABELS = {
     0: '0: None',
 }
 
-PLATE_TAG = '@plate'  # added/removed with +/- keys to "put items on/off your plate"
-IMPORTANT_TAG = '!!!'  # added/removed with !/@ keys for important but not urgent tasks
-
 CHOICE_ABORT = '[Cancel]'
 CHOICE_NEW_TAG = '[New Tag]'
 
@@ -236,22 +233,6 @@ class EntryButton(urwid.Button):
         elif key == '-':
             # NOTE: if you change the key for this binding, update exit_key:
             self.ui.user_choice_removetag(self.entry, exit_key='-')
-        elif key == '#':
-            self.entry.add_tags(PLATE_TAG)
-            # TODO: This reload is excessive and should be handled by updating the cache instead
-            self.ui.reload()
-        elif key == '$':
-            self.entry.remove_tags(PLATE_TAG)
-            # TODO: This reload is excessive and should be handled by updating the cache instead
-            self.ui.reload()
-        elif key == '!':
-            self.entry.add_tags(IMPORTANT_TAG)
-            # TODO: This reload is excessive and should be handled by updating the cache instead
-            self.ui.reload()
-        elif key == '@':
-            self.entry.remove_tags(IMPORTANT_TAG)
-            # TODO: This reload is excessive and should be handled by updating the cache instead
-            self.ui.reload()
         elif key == 'p':
             # NOTE: if you change the key for this binding, update exit_key:
             self.ui.user_choice_prio(self.entry, exit_key='p')

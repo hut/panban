@@ -21,8 +21,7 @@ consistent UI.  Currently supported data formats are:
 | `ENTER`    | edit entry                                                   |
 | p          | edit task priority                                           |
 | 1-9        | move entry to column N                                       |
-| + or -     | add/remove tags                                              |
-| ! or @     | add/remove "!!!" tag                                         |
+| +/-        | add/remove tags                                              |
 | z          | toggle visibility of metadata                                |
 | /          | filter entries by regex                                      |
 | ?          | reset filter                                                 |
