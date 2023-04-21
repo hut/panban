@@ -57,7 +57,7 @@ class Handler(object):
 
     def main_with_error_handling(self, data_stream):
         try:
-            error_code = self.main(data_stream)
+            self.main(data_stream)
         except exceptions.HandlerException as e:
             if e.args:
                 print(e.message.format(*e.args))
