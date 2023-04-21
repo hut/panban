@@ -24,9 +24,9 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('-f', '--frontend', type=str, default='urwid',
-            help='Which frontend? Current choices: ' + frontend_choices)
+            help='Which frontend? Choices: ' + frontend_choices)
     parser.add_argument('-b', '--backend', type=str, default='markdown', 
-            help='Which database type? Current choices: ' + backend_choices)
+            help='Which database type? Choices: ' + backend_choices)
     parser.add_argument('--debug', action='store_true',
             help='Enable debugging features')
     parser.add_argument('-t', '--tab', type=str,
