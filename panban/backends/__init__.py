@@ -1,7 +1,7 @@
-from panban.formats import caldav
-from panban.formats import github
-from panban.formats import markdown
-from panban.formats import todotxt
+from panban.backends import caldav
+from panban.backends import github
+from panban.backends import markdown
+from panban.backends import todotxt
 
 ALL_BACKENDS = {
     'caldav': caldav,

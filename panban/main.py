@@ -1,5 +1,5 @@
 from panban.frontends import ALL_FRONTENDS, DEFAULT_FRONTEND
-from panban.formats import ALL_BACKENDS, DEFAULT_BACKEND
+from panban.backends import ALL_BACKENDS, DEFAULT_BACKEND
 from panban.controller import DatabaseAbstraction
 
 def main():
