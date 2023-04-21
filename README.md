@@ -1,4 +1,4 @@
-![screenshot](screenshot.png)
+![screenshot](demos/markdown/screenshot_markdown.png)
 
 # Panban
 
@@ -61,4 +61,4 @@ You can also use this to view github issues (read-only):
 
 - `./panban.py -b github ranger/ranger`
 
-![screenshot of github issues](screenshot_github.png)
+![screenshot of github issues](demos/github/screenshot_github.png)
