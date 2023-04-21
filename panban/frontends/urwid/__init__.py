@@ -45,6 +45,7 @@ PLATE_TAG = '@plate'  # added/removed with +/- keys to "put items on/off your pl
 IMPORTANT_TAG = '!!!'  # added/removed with !/@ keys for important but not urgent tasks
 
 CHOICE_ABORT = '[Cancel]'
+CHOICE_NEW_TAG = '[New Tag]'
 
 
 class UI(object):
@@ -121,6 +122,27 @@ class UI(object):
         self._choice_focus = focus
         self._choice_exit_key = exit_key
         self.base._open_choice_popup()
+
+    def user_choice_addtag(self, node, exit_key=None):
+        options = [CHOICE_ABORT] + self.db.all_tags + [CHOICE_NEW_TAG]
+        self.user_choice(
+            options=options,
+            callback=self._user_choice_addtag_callback,
+            exit_key=exit_key,
+            callback_params=[node],
+        )
+
+    def _user_choice_addtag_callback(self, choice, node):
+        if choice == CHOICE_NEW_TAG:
+            tag = self.edit_string('')
+            if tag:
+                node.add_tags(tag)
+                # TODO: This reload is excessive and should be handled by updating the cache instead
+                self.reload()
+        elif choice not in (CHOICE_ABORT, CHOICE_NEW_TAG):
+            node.add_tags(choice)
+            # TODO: This reload is excessive and should be handled by updating the cache instead
+            self.reload()
 
     def user_choice_removetag(self, node, exit_key=None):
         options = [CHOICE_ABORT] + node.tags
@@ -208,11 +230,8 @@ class EntryButton(urwid.Button):
             if urls:
                 self.ui.open_in_browser(urls[0])
         elif key == '+':
-            tag = self.ui.edit_string('')
-            if tag:
-                self.entry.add_tags(tag)
-                # TODO: This reload is excessive and should be handled by updating the cache instead
-                self.ui.reload()
+            # NOTE: if you change the key for this binding, update exit_key:
+            self.ui.user_choice_addtag(self.entry, exit_key='+')
         elif key == '-':
             # NOTE: if you change the key for this binding, update exit_key:
             self.ui.user_choice_removetag(self.entry, exit_key='-')
