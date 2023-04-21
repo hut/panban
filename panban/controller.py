@@ -20,6 +20,7 @@ class DatabaseAbstraction(object):
         self.root_node_ids = []
         self.nodes_by_id = {}
         self.features = []
+        self.all_tags = []
         self.json_api_version = None
         self.json_api = None
         self.last_modification = 0
@@ -38,12 +39,15 @@ class DatabaseAbstraction(object):
 
         self.root_node_ids = []
         self.nodes_by_id = {}
+        all_tags = set()
         for node_id, node_json in response.data.items():
             pnode = PortableNode.from_json(self.json_api, node_json)
             node = Node.from_portable_node(pnode, self)
+            all_tags.update(node.tags)
             if not node.parent:
                 self.root_node_ids.append(node.id)
             self.nodes_by_id[node.id] = node
+        self.all_tags = list(sorted(all_tags))
 
     def add_node(self, label, parent_id):
         response = self.command('add_node', label=label,
