@@ -122,6 +122,8 @@ class Handler(panban.api.Handler):
 
         vtodo = icalendar.Todo()
         vtodo['summary'] = query.arguments['label']
+        if query.arguments['prio']:
+            vtodo['priority'] = VTODO_PRIO_MAP[query.arguments['prio']]
         vtodo['created'] = icalendar.vDatetime(datetime.datetime.now())
         vtodo['uid'] = uid = str(uuid.uuid4())
 

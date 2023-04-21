@@ -166,6 +166,13 @@ class UI(object):
             callback_params=[node],
         )
 
+    def _add_node(self, column_id, prio):
+        new_label = self.edit_string()
+        if new_label.strip():
+            self.db.add_node(new_label, column_id, prio=prio)
+            # TODO: This rebuild is excessive and should be handled by updating the cache instead
+            self.rebuild()
+
     def open_in_browser(self, url):
         subprocess.Popen(['firefox', url])
 
@@ -200,8 +207,9 @@ class EntryButton(urwid.Button):
     button_left = urwid.Text("-")
     button_right = urwid.Text("")
 
-    def __init__(self, ui, entry):
+    def __init__(self, ui, columnbox, entry):
         self.ui = ui
+        self.columnbox = columnbox
         self.entry = entry
         if not self.ui.kanban_layout.hide_metadata:
             label = "{0.label} [prio={0.prio} id={1} tags={2} create={0.creation_date} complete={0.completion_date}]".format(entry, entry.id[:8], ','.join(entry.tags or ('None', )))
@@ -236,6 +244,8 @@ class EntryButton(urwid.Button):
         elif key == 'p':
             # NOTE: if you change the key for this binding, update exit_key:
             self.ui.user_choice_prio(self.entry, exit_key='p')
+        elif key == 'A':
+            self.ui._add_node(self.columnbox.column.id, self.entry.prio)
         elif key in '123456789':
             key_int = ord(key) - ord('1')
             tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]
@@ -243,7 +253,8 @@ class EntryButton(urwid.Button):
             self.entry.move_to_column(column_id)
             # TODO: This reload is excessive and should be handled by updating the cache instead
             self.ui.reload()
-        return super(EntryButton, self).keypress(size, key)
+        else:
+            return super(EntryButton, self).keypress(size, key)
 
 
 class Base(urwid.WidgetPlaceholder):
@@ -516,7 +527,7 @@ class ColumnBox(urwid.ListBox):
                 self.list_walker.append(urwid.Divider())
             previous_group = group
 
-            widget = EntryButton(self.ui, entry)
+            widget = EntryButton(self.ui, self, entry)
             widget = urwid.AttrMap(widget, 'button', 'focus button')
             self.list_walker.append(widget)
 
@@ -524,10 +535,11 @@ class ColumnBox(urwid.ListBox):
             self.list_walker.set_focus(0)
 
     def keypress(self, size, key):
+        key = super(ColumnBox, self).keypress(size, key)
+        if key is None:
+            return # key was handled by child already
+
         if key == 'A':
-            new_label = self.ui.edit_string()
-            if new_label.strip():
-                self.ui.db.add_node(new_label, self.column.id)
-                # TODO: This rebuild is excessive and should be handled by updating the cache instead
-                self.ui.rebuild()
-        return super(ColumnBox, self).keypress(size, key)
+            # This is only reached when there is no focused node in the column
+            self.ui._add_node(self.column.id, 0)
+        return key
