@@ -55,8 +55,9 @@ class UI(object):
 
         self.menu = MenuBox(self)
         self.prio_menu = PrioMenuBox(self)
+        self.choice_menu = ChoiceMenuBox(self)
         self.kanban_layout = KanbanLayout(self)
-        self.base = Base(self, db, self.kanban_layout, self.menu, self.prio_menu)
+        self.base = Base(self, db, self.kanban_layout, self.menu, self.prio_menu, self.choice_menu)
         self.tabs = None
 
         self._original_urwid_SHOW_CURSOR = urwid.escape.SHOW_CURSOR
@@ -105,6 +106,20 @@ class UI(object):
             new_string = f.read().rstrip('\n')
         os.unlink(filename)
         return new_string
+
+    def user_choice(self, options, callback, quick_keys=None, focus=0,
+            exit_key=None, callback_params=None):
+        """
+        Opens up a pop-up that lets the user choose one of the given options.
+        """
+
+        self._choice_callback = callback
+        self._choice_callback_params = callback_params
+        self._choice_options = options
+        self._choice_quick_keys = quick_keys
+        self._choice_focus = focus
+        self._choice_exit_key = exit_key
+        self.base._open_choice_popup()
 
     def open_in_browser(self, url):
         subprocess.Popen(['firefox', url])
@@ -208,33 +223,44 @@ class EntryButton(urwid.Button):
 
 
 class Base(urwid.WidgetPlaceholder):
-    def __init__(self, ui, db, content, menu, prio_menu):
+    def __init__(self, ui, db, content, menu, prio_menu, choice_menu):
         super(Base, self).__init__(content)
         self.content_widget = content
         self.menu_widget = menu
         self.ui = ui
         self.db = db
         self.prio_widget = prio_menu
+        self.choice_widget = choice_menu
         self.overlay_widget = urwid.Overlay(
             urwid.LineBox(self.menu_widget),
             content, 'center', 23, 'middle', 23)
         self.overlay_widget_prio = urwid.Overlay(
             urwid.LineBox(self.prio_widget),
             content, 'center', 20, 'middle', 6)
+        self.overlay_widget_choice = urwid.Overlay(
+            urwid.LineBox(self.choice_widget),
+            content, 'center', 23, 'middle', 10)
 
     def flip(self):
         if self.original_widget == self.content_widget:
             self.original_widget = self.overlay_widget
             self.menu_widget.focus_category(self.ui.kanban_layout.active_tab_nr)
         else:
-            self.original_widget = self.content_widget
+            self._close_popup()
 
     def flip_prio(self, node):
         if self.original_widget == self.overlay_widget_prio:
-            self.original_widget = self.content_widget
+            self._close_popup()
         else:
             self.original_widget = self.overlay_widget_prio
             self.prio_widget.update_node(node)
+
+    def _open_choice_popup(self):
+        self.choice_widget.load_options()
+        self.original_widget = self.overlay_widget_choice
+
+    def _close_popup(self):
+        self.original_widget = self.content_widget
 
     def reload(self):
         self.db.reload()
@@ -347,6 +373,54 @@ class PrioMenuButton(urwid.Button):
 
     def click(self):
         self.menu._set_prio(self.target_prio)
+
+
+class ChoiceMenuBox(urwid.ListBox):
+    def __init__(self, ui):
+        self.ui = ui
+        self.list_walker = urwid.SimpleFocusListWalker([])
+        super(ChoiceMenuBox, self).__init__(self.list_walker)
+
+    def keypress(self, size, key):
+        if key in ('tab', 'q', self.ui._choice_exit_key):
+            self.ui.base._close_popup()
+        return super(ChoiceMenuBox, self).keypress(size, key)  # pylint: disable=not-callable
+
+    def _set_prio(self, prio):
+        self.node.change_prio(prio)
+        self.ui.base.flip()
+
+    def load_options(self):
+        self.list_walker[:] = []
+        # TODO: clean up button objects. disconnect signals if necessary
+
+        if isinstance(self.ui._choice_options, dict):
+            options = [(value, label) for value, label in self.ui._choice_options]
+        else:
+            options = [(label, label) for label in self.ui._choice_options]
+
+        for value, label in options:
+            button = ChoiceMenuButton(self, self.ui, value, label)
+            urwid.connect_signal(button, 'click', ChoiceMenuButton.click)
+            button = urwid.AttrMap(button, 'button', 'focus button')
+            self.list_walker.append(button)
+
+        if self.ui._choice_focus:
+            self.list_walker.set_focus(self.ui._choice_focus)
+
+
+class ChoiceMenuButton(urwid.Button):
+    button_left = urwid.Text("")
+    button_right = urwid.Text("")
+    def __init__(self, menu, ui, value, label):
+        super(ChoiceMenuButton, self).__init__(label)
+        self.ui = ui
+        self.menu = menu
+        self.value = value
+
+    def click(self):
+        self.ui._choice_callback(self.value, *self.ui._choice_callback_params)
+        self.ui.base._close_popup()
 
 
 class KanbanLayout(urwid.Columns):
