@@ -162,9 +162,15 @@ class UI(object):
             options=PRIO_LABELS,
             exit_key=exit_key,
             focus=list(PRIO_LABELS).index(node.prio),
-            callback=lambda prio, node: node.change_prio(prio),
+            callback=self._user_choice_prio_callback,
             callback_params=[node],
         )
+
+    def _user_choice_prio_callback(self, prio, node):
+        old_prio = node.prio
+        node.change_prio(prio)
+        if old_prio != node.prio:
+            self.reload()
 
     def _add_node(self, column_id, prio):
         new_label = self.edit_string()
