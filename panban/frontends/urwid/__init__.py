@@ -209,6 +209,11 @@ class UI(object):
         self.menu.reload()
 
 
+class DummyButton(urwid.Button):
+    button_left = urwid.Text("")
+    button_right = urwid.Text("")
+
+
 class EntryButton(urwid.Button):
     button_left = urwid.Text("-")
     button_right = urwid.Text("")
@@ -535,6 +540,11 @@ class ColumnBox(urwid.ListBox):
             previous_group = group
 
             widget = EntryButton(self.ui, self, entry)
+            widget = urwid.AttrMap(widget, 'button', 'focus button')
+            self.list_walker.append(widget)
+
+        if not nodes:
+            widget = DummyButton("")
             widget = urwid.AttrMap(widget, 'button', 'focus button')
             self.list_walker.append(widget)
 
