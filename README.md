@@ -8,9 +8,9 @@ A modular kanban tool with swappable front-ends and database interfaces.  It
 allows you to view various kinds of structured data as a kanban board, with a
 consistent UI.  Currently supported data formats are:
 
-- Markdown lists (read+write)
-- todo.txt (read+write)
-- GitHub issues (read only)
+- [Markdown lists](demos/markdown/README.md) (read+write)
+- [todo.txt](demos/todotxt/README.md) (read+write)
+- [GitHub issues](demos/github/README.md) (read only)
 - [CalDav VTODO Tasks](demos/caldav/README.md), synced via e.g. [vdirsyncer](https://github.com/pimutils/vdirsyncer) (read+write)
 
 # Key bindings
