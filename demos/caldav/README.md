@@ -7,6 +7,12 @@ NextCloud, Outlook, Google Tasks, Tasks.org, etc., by utilizing the
 The task files need to be accessible via the file system, so in order to access
 remote calendars from e.g. NextCloud, you need to sync them to the file system first with an application like [vdirsyncer](https://github.com/pimutils/vdirsyncer).
 
+Try this command from the root directory of this git repository:
+
+```
+./panban.py -b caldav demos/caldav
+```
+
 Here is an example screenshot of actual panban use during panban development:
 
 ![Screenshot of Panban using CalDAV backend](screenshot_caldav.png)
