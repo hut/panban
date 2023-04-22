@@ -11,7 +11,7 @@ consistent UI.  Currently supported data formats are:
 - Markdown lists (read+write)
 - todo.txt (read+write)
 - GitHub issues (read only)
-- CalDav VTODO Tasks, synced via e.g. [vdirsyncer](https://github.com/pimutils/vdirsyncer) (read+write)
+- [CalDav VTODO Tasks](demos/caldav/README.md), synced via e.g. [vdirsyncer](https://github.com/pimutils/vdirsyncer) (read+write)
 
 # Key bindings
 
