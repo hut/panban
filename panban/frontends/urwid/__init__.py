@@ -425,6 +425,7 @@ class KanbanLayout(urwid.Columns):
 
         columnboxes = []
         for column in self.get_column_nodes():
+            # TODO: don't re-create ColumnBoxes on each reload
             columnbox = ColumnBox(self.ui, column)
             columnbox.reload()
             columnboxes.append((columnbox, self.options()))
