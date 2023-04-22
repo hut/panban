@@ -170,7 +170,7 @@ class UI(object):
         old_prio = node.prio
         node.change_prio(prio)
         if old_prio != node.prio:
-            self.reload()
+            self.rebuild()
 
     def _add_node(self, column_id, prio):
         new_label = self.edit_string()
