@@ -33,6 +33,7 @@ PALETTE = [
     ('heading_Active', 'black', 'dark red'),
     ('heading_Finished', 'black', 'dark green'),
     ('heading_Urgent', 'black', 'light magenta'),
+    ('heading_Next', 'black', 'dark blue'),
 ]
 PRIO_LABELS = {
     3: '3: High',
@@ -489,14 +490,16 @@ class ColumnBox(urwid.ListBox):
         else:
             label = self.label
         styling = 'heading'
-        if self.label.lower() == 'active':
+        if self.label.lower() in ('active', 'in progress'):
             styling = 'heading_Active'
-        elif self.label.lower() in ('urgent', 'high prio'):
+        elif self.label.lower() in ('urgent', 'high prio', 'high priority'):
             styling = 'heading_Urgent'
-        elif self.label.lower() in ('inactive', 'todo'):
+        elif self.label.lower() in ('inactive', 'todo', 'backlog', 'backburner', 'archive', 'blocked'):
             styling = 'heading_Inactive'
         elif self.label.lower() in ('finished', 'done'):
             styling = 'heading_Finished'
+        elif self.label.lower() in ('next', 'upcoming'):
+            styling = 'heading_Next'
         self.list_walker.append(urwid.AttrMap(urwid.Text(label), styling))
         self.list_walker.append(urwid.Divider())
 
