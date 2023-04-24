@@ -227,7 +227,7 @@ class UI(object):
             self.rebuild()
 
     def _add_node(self, column_id, prio):
-        new_label = self.edit_string_async('', 'New Task', self._add_node_callback, [column_id, prio])
+        self.edit_string_async('', 'New Task', self._add_node_callback, [column_id, prio])
 
     def _add_node_callback(self, new_label, column_id, prio):
         if new_label.strip():
