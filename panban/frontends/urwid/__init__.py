@@ -64,12 +64,16 @@ CHOICE_NEW_TAG = '[New Tag]'
 
 
 class UI(object):
-    def __init__(self, db, initial_tab=None, debug=False):
+    def __init__(self, db, initial_tab=None, debug=False, theme=None):
         self.db = db
         self.loop = None
         self.debug = debug
         self.initial_tab = initial_tab
         self.filter_regex = None
+
+        self.theme = DEFAULT_THEME
+        if theme is not None:
+            self.theme += open(theme, 'r').read()
 
         self.menu = MenuBox(self)
         self.choice_menu = ChoiceMenuBox(self)
@@ -104,7 +108,7 @@ class UI(object):
             urwid.escape.SHOW_CURSOR = ''
             self.reload()
             self.menu.reload()
-            palette = self._parse_theme(DEFAULT_THEME)
+            palette = self._parse_theme(self.theme)
             self.loop = urwid.MainLoop(self.base, palette)
         else:
             raise Exception("Do not call UI.activate() more than once!")
