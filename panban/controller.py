@@ -173,12 +173,6 @@ class Node(object):
         node.completion_date = portable_node.completion_date
         node._raw_json = portable_node._raw_json
 
-        # Not needed anymore, since children is now a list of IDs
-        #for child_data in data['children']:
-        #    child = Node.from_json(child_data, db)
-        #    child.parent = node
-        #    node.children.append(child)
-
         return node
 
     def __repr__(self):
