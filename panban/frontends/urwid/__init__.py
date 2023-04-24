@@ -377,8 +377,7 @@ class Base(urwid.WidgetPlaceholder):
         elif key == 'R':
             self.reload()
         elif key == '/':
-            self.ui.filter_regex = self.ui.edit_string('')
-            self.ui.rebuild()
+            self.ui.edit_string_async('', 'Regex Filter', self._apply_filter)
         elif key == '?':
             self.ui.filter_regex = None
             self.ui.rebuild()
@@ -389,6 +388,10 @@ class Base(urwid.WidgetPlaceholder):
             self.ui.reload()
         else:
             return key
+
+    def _apply_filter(self, pattern):
+        self.ui.filter_regex = pattern
+        self.ui.rebuild()
 
 
 class MenuBox(urwid.ListBox):
