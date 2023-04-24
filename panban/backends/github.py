@@ -81,7 +81,7 @@ class Handler(panban.api.Handler):
 
         self.nodes_by_id = nodes_by_id
 
-    def make_node(self, node_id, label, parent, pos=0, prio=0,
+    def make_node(self, node_id, label, parent, pos=0, prio=2,
                 creation_date=None, completion_date=None):
         if isinstance(parent, PortableNode):
             parent_id = parent.id
