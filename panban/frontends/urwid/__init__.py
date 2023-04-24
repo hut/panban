@@ -661,6 +661,6 @@ class ColumnBox(urwid.ListBox):
         key = super(ColumnBox, self).keypress(size, key)
         if key == 'A':
             # This is only reached when there is no focused node in the column
-            self.ui._add_node(self.column.id, 0)
+            self.ui._add_node(self.column.id, DEFAULT_PRIO)
         else:
             return key
