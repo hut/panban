@@ -106,9 +106,7 @@ class UI(object):
 
     def activate(self):
         if self.loop is None:
-            # Workaround for hiding cursor, see
-            # https://github.com/urwid/urwid/issues/170
-            urwid.escape.SHOW_CURSOR = ''
+            self.hide_cursor()
             self.reload()
             self.menu.reload()
             palette = self._parse_theme(self.theme)
@@ -126,6 +124,13 @@ class UI(object):
     def reactivate(self):
         self.base.reload()
         self.loop.start()
+
+    def hide_cursor(self):
+        # Workaround, see https://github.com/urwid/urwid/issues/170
+        urwid.escape.SHOW_CURSOR = ''
+
+    def show_cursor(self):
+        urwid.escape.SHOW_CURSOR = self._original_urwid_SHOW_CURSOR
 
     def system(self, command):
         self.deactivate()
