@@ -155,8 +155,8 @@ class UI(object):
         os.unlink(filename)
         return new_string
 
-    def edit_string_async(self, string, title, callback):
-        self.base._open_edit_popup(string, title, callback)
+    def edit_string_async(self, string, title, callback, callback_params=None):
+        self.base._open_edit_popup(string, title, callback, callback_params)
 
     def user_choice(self, options, callback, quick_keys=None, focus=0,
             exit_key=None, callback_params=None):
@@ -225,7 +225,9 @@ class UI(object):
             self.rebuild()
 
     def _add_node(self, column_id, prio):
-        new_label = self.edit_string()
+        new_label = self.edit_string_async('', 'New Task', self._add_node_callback, [column_id, prio])
+
+    def _add_node_callback(self, new_label, column_id, prio):
         if new_label.strip():
             self.db.add_node(new_label, column_id, prio=prio)
             # TODO: This rebuild is excessive and should be handled by updating the cache instead
