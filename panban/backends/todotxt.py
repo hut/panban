@@ -8,7 +8,16 @@ import argparse
 import panban.api
 import panban.json_api.eternal
 from panban.json_api import exceptions
-from panban.json_api.eternal import PortableResponse, PortableNode
+from panban.json_api.eternal import PortableResponse, PortableNode, DEFAULT_PRIO
+
+PRIORITY_MAP = {
+    'A': 3,
+    'B': 2,
+    'C': 1,
+    None: 0,
+}
+for letter in 'DEFGHIJKLMNOPQRSTUVWXYZ':
+    PRIORITY_MAP[letter] = 1
 
 def today():
     return time.strftime('%Y-%m-%d')
@@ -176,13 +185,22 @@ class Handler(panban.api.Handler):
         ]
 
         def add_context(name, pos):
-            project_node = self.make_node(name, None, pos, None)
+            project_node = self.make_node(
+                label=name,
+                parent=None,
+                pos=pos,
+                prio=DEFAULT_PRIO,
+            )
             nodes_by_id[project_node.id] = project_node
             projects[name] = project_node
 
             for colpos, column_name in enumerate(column_labels):
-                column_node = self.make_node(column_name, project_node, colpos,
-                        None)
+                column_node = self.make_node(
+                    label=column_name,
+                    parent=project_node,
+                    pos=colpos,
+                    prio=DEFAULT_PRIO,
+                )
                 nodes_by_id[column_node.id] = column_node
                 project_node.children.append(column_node.id)
 
@@ -217,12 +235,14 @@ class Handler(panban.api.Handler):
                     target_column_id = project_node.children[0]
                 target_column = nodes_by_id[target_column_id]
 
-                pos = len(target_column.children)
-                label = self.todo_label_to_node_label(todo.text)
-                prio = todo.priority
-                node = self.make_node(label, target_column.id, pos, prio,
-                        creation_date=todo.creation_date,
-                        completion_date=todo.completion_date)
+                node = self.make_node(
+                    label=self.todo_label_to_node_label(todo.text),
+                    parent=target_column.id,
+                    pos=len(target_column.children),
+                    prio=PRIORITY_MAP[todo.priority],
+                    creation_date=todo.creation_date,
+                    completion_date=todo.completion_date
+                )
 
                 target_column.children.append(node.id)
                 nodes_by_id[node.id] = node
