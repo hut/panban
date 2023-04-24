@@ -378,9 +378,6 @@ class Base(urwid.WidgetPlaceholder):
             self.reload()
         elif key == '/':
             self.ui.edit_string_async('', 'Regex Filter', self._apply_filter)
-        elif key == '?':
-            self.ui.filter_regex = None
-            self.ui.rebuild()
         elif key == 'y':
             self.ui.deactivate()
             self.ui.db.sync()

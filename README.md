@@ -24,7 +24,6 @@ consistent UI.  Currently supported data formats are:
 | +/-        | add/remove tags                                              |
 | z          | toggle visibility of metadata                                |
 | /          | filter entries by regex                                      |
-| ?          | reset filter                                                 |
 | o          | open first URL in task description in Firefox                |
 | A          | add new entry                                                |
 | X          | delete entry                                                 |
