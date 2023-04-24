@@ -397,6 +397,13 @@ class MenuBox(urwid.ListBox):
         self.list_walker = urwid.SimpleFocusListWalker([])
         super(MenuBox, self).__init__(self.list_walker)
 
+
+    def keypress(self, size, key):
+        key = super().keypress(size, key)
+        if key in ('tab', 'q'):
+            self.ui.base._close_popup()
+        # Do NOT return the key here to block downstream key bindings
+
     def focus_category(self, category_index):
         # category_index is literally the position of the category in the list
         return self.list_walker.set_focus(category_index)
@@ -437,8 +444,7 @@ class ChoiceMenuBox(urwid.ListBox):
         key = super().keypress(size, key)
         if key in ('tab', 'q', self.ui._choice_exit_key):
             self.ui.base._close_popup()
-        else:
-            return key
+        # Do NOT return the key here to block downstream key bindings
 
     def load_options(self):
         self.list_walker[:] = []
