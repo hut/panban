@@ -38,12 +38,15 @@ prio3           light_red /
 prio3_focused   light_red,standout /
 button          / /
 button_focused  standout /
-header          light_gray,standout /
-header_inactive dark_gray,standout /
-header_active   dark_red,standout /
-header_finished dark_green,standout /
-header_urgent   light_magenta,standout /
-header_next     dark_blue,standout /
+
+header              light_gray,standout /
+header_todo         dark_gray,standout /
+header_backlog      dark_gray,standout /
+header_active       dark_red,standout /
+header_in_progress  dark_red,standout /
+header_done         dark_green,standout /
+header_urgent       light_magenta,standout /
+header_next         dark_blue,standout /
 """
 
 COLOR_MAP_BY_PRIO = {
@@ -74,6 +77,7 @@ class UI(object):
         self.theme = DEFAULT_THEME
         if theme is not None:
             self.theme += open(theme, 'r').read()
+        self.palette = self._parse_theme(self.theme)
 
         self.menu = MenuBox(self)
         self.choice_menu = ChoiceMenuBox(self)
@@ -109,8 +113,7 @@ class UI(object):
             self.hide_cursor()
             self.reload()
             self.menu.reload()
-            palette = self._parse_theme(self.theme)
-            self.loop = urwid.MainLoop(self.base, palette)
+            self.loop = urwid.MainLoop(self.base, self.palette)
         else:
             raise Exception("Do not call UI.activate() more than once!")
 
@@ -590,17 +593,14 @@ class ColumnBox(urwid.ListBox):
             label = "%s <%s>" % (self.label, column.id[:8])
         else:
             label = self.label
-        styling = 'header'
-        if self.label.lower() in ('active', 'in progress'):
-            styling = 'header_active'
-        elif self.label.lower() in ('urgent', 'high prio', 'high priority'):
-            styling = 'header_urgent'
-        elif self.label.lower() in ('inactive', 'todo', 'backlog', 'backburner', 'archive', 'blocked'):
-            styling = 'header_inactive'
-        elif self.label.lower() in ('finished', 'done'):
-            styling = 'header_finished'
-        elif self.label.lower() in ('next', 'upcoming'):
-            styling = 'header_next'
+
+        palette_keys = [key for (key, fg, bg) in self.ui.palette]
+        palette_key = 'header_' + self.label.lower().replace(' ', '_')
+        if palette_key in palette_keys:
+            styling = palette_key
+        else:
+            styling = 'header'
+
         self.list_walker.append(urwid.AttrMap(urwid.Text(label), styling))
         self.list_walker.append(urwid.Divider())
 
