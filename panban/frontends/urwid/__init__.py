@@ -21,28 +21,35 @@ VIM_KEYS = {
     'g': 'cursor max left',
     'G': 'cursor max right',
 }
-PALETTE = [
-    (None, '', ''),
-    ('heading', 'black', 'light gray'),
-    ('button', 'default', ''),
-    ('focus button', 'black', 'white'),
-    ('button_lowprio', 'default', ''),
-    ('focus button_lowprio', 'black', 'white'),
-    ('button_highprio', 'light red', ''),
-    ('focus button_highprio', 'black', 'light red'),
-    ('button_noprio', 'dark gray', ''),
-    ('focus button_noprio', 'white', 'dark gray'),
-    ('heading_Inactive', 'black', 'dark gray'),
-    ('heading_Active', 'black', 'dark red'),
-    ('heading_Finished', 'black', 'dark green'),
-    ('heading_Urgent', 'black', 'light magenta'),
-    ('heading_Next', 'black', 'dark blue'),
-]
+
+# Each line: "Context Foreground Background", items separated by whitespace.
+# Available colors: http://urwid.org/manual/displayattributes.html
+# Replace spaces in attributes by "_", e.g. "light red" -> "light_red".
+DEFAULT_THEME = """
+default         / /
+prio0           dark_blue /
+prio0_focused   dark_blue,standout /
+prio1           / /
+prio1_focused   standout /
+prio2           / /
+prio2_focused   standout /
+prio3           light_red /
+prio3_focused   light_red,standout /
+button          / /
+button_focused  standout /
+header          light_gray,standout /
+header_inactive dark_gray,standout /
+header_active   dark_red,standout /
+header_finished dark_green,standout /
+header_urgent   light_magenta,standout /
+header_next     dark_blue,standout /
+"""
+
 COLOR_MAP_BY_PRIO = {
-    0: 'button_noprio',
-    1: 'button_lowprio',
-    2: 'button',
-    3: 'button_highprio',
+    0: 'prio0',
+    1: 'prio1',
+    2: 'prio2',
+    3: 'prio3',
 }
 PRIO_LABELS = {
     3: '3: High',
@@ -50,6 +57,7 @@ PRIO_LABELS = {
     1: '1: Low',
     0: '0: None',
 }
+FALLBACK_PRIO = 2
 
 CHOICE_ABORT = '[Cancel]'
 CHOICE_NEW_TAG = '[New Tag]'
@@ -71,6 +79,24 @@ class UI(object):
 
         self._original_urwid_SHOW_CURSOR = urwid.escape.SHOW_CURSOR
 
+    def _parse_theme(self, theme):
+        palette = []
+        for line in theme.split('\n'):
+            components = line.split()
+            if len(components) != 3:
+                continue
+            tag, fg, bg = components
+            if tag == 'default':
+                tag = None
+            fg = fg.replace('_', ' ')
+            bg = bg.replace('_', ' ')
+            if fg == '/':
+                fg = ''
+            if bg == '/':
+                bg = ''
+            palette.append((tag, fg, bg))
+        return palette
+
     def activate(self):
         if self.loop is None:
             # Workaround for hiding cursor, see
@@ -78,7 +104,8 @@ class UI(object):
             urwid.escape.SHOW_CURSOR = ''
             self.reload()
             self.menu.reload()
-            self.loop = urwid.MainLoop(self.base, PALETTE)
+            palette = self._parse_theme(DEFAULT_THEME)
+            self.loop = urwid.MainLoop(self.base, palette)
         else:
             raise Exception("Do not call UI.activate() more than once!")
 
@@ -351,7 +378,7 @@ class MenuBox(urwid.ListBox):
             button = MenuButton(self.ui, entry.label, entry.id)
             urwid.connect_signal(button, 'click',
                     lambda button: button.click())
-            button = urwid.AttrMap(button, 'button', 'focus button')
+            button = urwid.AttrMap(button, 'button', 'button_focused')
             self.list_walker.append(button)
         if not focus:  # Avoid starting with the bottom item focused
             self.list_walker.set_focus(0)
@@ -393,7 +420,7 @@ class ChoiceMenuBox(urwid.ListBox):
         for value, label in options:
             button = ChoiceMenuButton(self, self.ui, value, label)
             urwid.connect_signal(button, 'click', ChoiceMenuButton.click)
-            button = urwid.AttrMap(button, 'button', 'focus button')
+            button = urwid.AttrMap(button, 'button', 'button_focused')
             self.list_walker.append(button)
 
         if self.ui._choice_focus:
@@ -498,17 +525,17 @@ class ColumnBox(urwid.ListBox):
             label = "%s <%s>" % (self.label, column.id[:8])
         else:
             label = self.label
-        styling = 'heading'
+        styling = 'header'
         if self.label.lower() in ('active', 'in progress'):
-            styling = 'heading_Active'
+            styling = 'header_active'
         elif self.label.lower() in ('urgent', 'high prio', 'high priority'):
-            styling = 'heading_Urgent'
+            styling = 'header_urgent'
         elif self.label.lower() in ('inactive', 'todo', 'backlog', 'backburner', 'archive', 'blocked'):
-            styling = 'heading_Inactive'
+            styling = 'header_inactive'
         elif self.label.lower() in ('finished', 'done'):
-            styling = 'heading_Finished'
+            styling = 'header_finished'
         elif self.label.lower() in ('next', 'upcoming'):
-            styling = 'heading_Next'
+            styling = 'header_next'
         self.list_walker.append(urwid.AttrMap(urwid.Text(label), styling))
         self.list_walker.append(urwid.Divider())
 
@@ -553,12 +580,13 @@ class ColumnBox(urwid.ListBox):
 
             widget = EntryButton(self.ui, self, entry)
             color = COLOR_MAP_BY_PRIO[entry.prio]
-            widget = urwid.AttrMap(widget, color, 'focus ' + color)
+            widget = urwid.AttrMap(widget, color, color + '_focused')
             self.list_walker.append(widget)
 
         if not nodes:
             widget = DummyButton("")
-            widget = urwid.AttrMap(widget, 'button', 'focus button')
+            color = COLOR_MAP_BY_PRIO[FALLBACK_PRIO]
+            widget = urwid.AttrMap(widget, color, color + '_focused')
             self.list_walker.append(widget)
 
         if not focus:  # Avoid starting with the bottom item focused
