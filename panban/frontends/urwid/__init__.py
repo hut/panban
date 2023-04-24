@@ -184,13 +184,15 @@ class UI(object):
 
     def _user_choice_addtag_callback(self, choice, node):
         if choice == CHOICE_NEW_TAG:
-            tag = self.edit_string('')
-            if tag:
-                node.add_tags(tag)
-                # TODO: This reload is excessive and should be handled by updating the cache instead
-                self.reload()
+            self.edit_string_async('', 'Add Tag', self._user_choice_addtag_edit_callback, [node])
         elif choice not in (CHOICE_ABORT, CHOICE_NEW_TAG):
             node.add_tags(choice)
+            # TODO: This reload is excessive and should be handled by updating the cache instead
+            self.reload()
+
+    def _user_choice_addtag_edit_callback(self, tag_name, node):
+        if tag_name:
+            node.add_tags(tag_name)
             # TODO: This reload is excessive and should be handled by updating the cache instead
             self.reload()
 
@@ -477,8 +479,8 @@ class ChoiceMenuButton(urwid.Button):
         self.value = value
 
     def click(self):
-        self.ui._choice_callback(self.value, *self.ui._choice_callback_params)
         self.ui.base._close_popup()
+        self.ui._choice_callback(self.value, *self.ui._choice_callback_params)
 
 
 class EditBox(urwid.Edit):
