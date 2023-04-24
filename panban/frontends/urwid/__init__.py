@@ -140,7 +140,7 @@ class UI(object):
             pass
         self.reactivate()
 
-    def edit_string(self, string=''):
+    def edit_string_externally(self, string=''):
         tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
         filename = tmp.name
         if string:
