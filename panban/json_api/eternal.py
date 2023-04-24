@@ -3,6 +3,8 @@
 from panban.json_api import exceptions, get_api_version
 import json
 
+DEFAULT_PRIO = 2
+
 def get_version(json):
     try:
         return json['version']
@@ -43,7 +45,7 @@ class PortableNode(object):
         self.children = []
         self.parent = None
         self.pos = None
-        self.prio = 0
+        self.prio = DEFAULT_PRIO
         self.tags = []
         self.creation_date = None
         self.completion_date = None

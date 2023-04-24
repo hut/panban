@@ -6,6 +6,7 @@ import time
 
 import urwid
 
+from panban.json_api.eternal import DEFAULT_PRIO
 from panban.api import UserFacingException
 from panban.util import extract_urls
 
@@ -57,7 +58,6 @@ PRIO_LABELS = {
     1: '1: Low',
     0: '0: None',
 }
-FALLBACK_PRIO = 2
 
 CHOICE_ABORT = '[Cancel]'
 CHOICE_NEW_TAG = '[New Tag]'
@@ -585,7 +585,7 @@ class ColumnBox(urwid.ListBox):
 
         if not nodes:
             widget = DummyButton("")
-            color = COLOR_MAP_BY_PRIO[FALLBACK_PRIO]
+            color = COLOR_MAP_BY_PRIO[DEFAULT_PRIO]
             widget = urwid.AttrMap(widget, color, color + '_focused')
             self.list_walker.append(widget)
 
