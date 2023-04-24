@@ -24,17 +24,26 @@ VIM_KEYS = {
 PALETTE = [
     (None, '', ''),
     ('heading', 'black', 'light gray'),
-    ('focus button', 'black', 'white'),
     ('button', 'default', ''),
-    ('button_alt', 'brown', ''),
-    ('button_important', 'light red', ''),
-    ('button_unimportant', 'dark gray', ''),
+    ('focus button', 'black', 'white'),
+    ('button_lowprio', 'default', ''),
+    ('focus button_lowprio', 'black', 'white'),
+    ('button_highprio', 'light red', ''),
+    ('focus button_highprio', 'black', 'light red'),
+    ('button_noprio', 'dark gray', ''),
+    ('focus button_noprio', 'white', 'dark gray'),
     ('heading_Inactive', 'black', 'dark gray'),
     ('heading_Active', 'black', 'dark red'),
     ('heading_Finished', 'black', 'dark green'),
     ('heading_Urgent', 'black', 'light magenta'),
     ('heading_Next', 'black', 'dark blue'),
 ]
+COLOR_MAP_BY_PRIO = {
+    0: 'button_noprio',
+    1: 'button_lowprio',
+    2: 'button',
+    3: 'button_highprio',
+}
 PRIO_LABELS = {
     3: '3: High',
     2: '2: Medium',
@@ -543,7 +552,8 @@ class ColumnBox(urwid.ListBox):
             previous_group = group
 
             widget = EntryButton(self.ui, self, entry)
-            widget = urwid.AttrMap(widget, 'button', 'focus button')
+            color = COLOR_MAP_BY_PRIO[entry.prio]
+            widget = urwid.AttrMap(widget, color, 'focus ' + color)
             self.list_walker.append(widget)
 
         if not nodes:
