@@ -86,6 +86,9 @@ class UI(object):
     def _parse_theme(self, theme):
         palette = []
         for line in theme.split('\n'):
+            line = line.strip()
+            if line.startswith('#') or line.startswith('/'):
+                continue
             components = line.split()
             if len(components) != 3:
                 continue
