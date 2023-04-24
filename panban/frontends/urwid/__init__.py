@@ -155,6 +155,9 @@ class UI(object):
         os.unlink(filename)
         return new_string
 
+    def edit_string_async(self, string, title, callback):
+        self.base._open_edit_popup(string, title, callback)
+
     def user_choice(self, options, callback, quick_keys=None, focus=0,
             exit_key=None, callback_params=None):
         """
