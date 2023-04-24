@@ -276,19 +276,22 @@ class EntryButton(urwid.Button):
         else:
             label = entry.label
         super(EntryButton, self).__init__(label)
-        urwid.connect_signal(self, 'click', lambda button: button.edit_label())
+        urwid.connect_signal(self, 'click', EntryButton.edit_label)
 
     def edit_label(self):
-        old_label = self.entry.label
-        new_label = self.ui.edit_string(old_label)
-        if new_label.strip() and old_label != new_label:
+        self._old_label = self.entry.label
+        self.ui.base._open_edit_popup(self.entry.label, "Task Title", self._edit_callback)
+
+    def _edit_callback(self, new_label):
+        if new_label.strip() and self._old_label != new_label:
             self.entry.change_label(new_label)
 
             # TODO: This reload/rebuild is excessive and should be handled by updating the cache instead
-            self.ui.db.reload()  # TODO:
+            self.ui.db.reload()
             self.ui.rebuild()
 
     def keypress(self, size, key):
+        key = super(EntryButton, self).keypress(size, key)
         if key == 'X':
             self.entry.delete()
         elif key == 'o':
@@ -306,7 +309,7 @@ class EntryButton(urwid.Button):
             self.ui.user_choice_prio(self.entry, exit_key='p')
         elif key == 'A':
             self.ui._add_node(self.columnbox.column.id, self.entry.prio)
-        elif key in '123456789':
+        elif key in tuple('123456789'):
             key_int = ord(key) - ord('1')
             tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]
             column_id = tab.children[key_int]
@@ -314,7 +317,7 @@ class EntryButton(urwid.Button):
             # TODO: This reload is excessive and should be handled by updating the cache instead
             self.ui.reload()
         else:
-            return super(EntryButton, self).keypress(size, key)
+            return key
 
 
 class Base(urwid.WidgetPlaceholder):
@@ -343,7 +346,16 @@ class Base(urwid.WidgetPlaceholder):
         self.choice_widget.load_options()
         self.original_widget = self.overlay_widget_choice
 
+    def _open_edit_popup(self, edit_text, title=None, callback=None, callback_params=None):
+        self.ui.show_cursor()
+        self._edit_widget = EditBox(self.ui, edit_text, callback, callback_params)
+        self._overlay_widget_edit = urwid.Overlay(
+            urwid.Filler(urwid.LineBox(self._edit_widget, title=title)),
+            self.content_widget, 'center', 42, 'middle', 6)
+        self.original_widget = self._overlay_widget_edit
+
     def _close_popup(self):
+        self.ui.hide_cursor()
         self.original_widget = self.content_widget
 
     def reload(self):
@@ -353,6 +365,8 @@ class Base(urwid.WidgetPlaceholder):
     def keypress(self, size, key):
         if self.db.last_modification > self.ui.last_rebuild:
             self.ui.rebuild()
+
+        key = super().keypress(size, key)
         if key in ('tab', 'q'):
             self.flip()
         elif key == 'Q':
@@ -370,7 +384,8 @@ class Base(urwid.WidgetPlaceholder):
             self.ui.db.sync()
             self.ui.reactivate()
             self.ui.reload()
-        return super(Base, self).keypress(size, key)  # pylint: disable=not-callable
+        else:
+            return key
 
 
 class MenuBox(urwid.ListBox):
@@ -416,9 +431,11 @@ class ChoiceMenuBox(urwid.ListBox):
         super(ChoiceMenuBox, self).__init__(self.list_walker)
 
     def keypress(self, size, key):
+        key = super().keypress(size, key)
         if key in ('tab', 'q', self.ui._choice_exit_key):
             self.ui.base._close_popup()
-        return super(ChoiceMenuBox, self).keypress(size, key)  # pylint: disable=not-callable
+        else:
+            return key
 
     def load_options(self):
         self.list_walker[:] = []
@@ -451,6 +468,27 @@ class ChoiceMenuButton(urwid.Button):
     def click(self):
         self.ui._choice_callback(self.value, *self.ui._choice_callback_params)
         self.ui.base._close_popup()
+
+
+class EditBox(urwid.Edit):
+    def __init__(self, ui, edit_text, callback=None, callback_params=None):
+        super().__init__(edit_text=edit_text, multiline=False)
+        self.ui = ui
+        self.callback = callback
+        if callback_params is None:
+            self.callback_params = []
+        else:
+            self.callback_params = callback_params
+
+    def keypress(self, size, key):
+        if key == 'esc':
+            self.ui.base._close_popup()
+        elif key == 'enter':
+            if self.callback:
+                self.callback(self.edit_text, *self.callback_params)
+            self.ui.base._close_popup()
+        else:
+            return super().keypress(size, key)
 
 
 class KanbanLayout(urwid.Columns):
@@ -507,10 +545,12 @@ class KanbanLayout(urwid.Columns):
         self.ui.rebuild()
 
     def keypress(self, size, key):
+        key = super().keypress(size, key)
         if key == 'z':
             self.hide_metadata ^= True
             self.ui.rebuild()
-        return super(KanbanLayout, self).keypress(size, key)
+        else:
+            return key
 
 class ColumnBox(urwid.ListBox):
     def __init__(self, ui, column):
@@ -606,10 +646,8 @@ class ColumnBox(urwid.ListBox):
 
     def keypress(self, size, key):
         key = super(ColumnBox, self).keypress(size, key)
-        if key is None:
-            return # key was handled by child already
-
         if key == 'A':
             # This is only reached when there is no focused node in the column
             self.ui._add_node(self.column.id, 0)
-        return key
+        else:
+            return key
