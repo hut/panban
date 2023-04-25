@@ -19,10 +19,12 @@ consistent UI.  Currently supported data formats are:
 |------------|--------------------------------------------------------------|
 | h/j/k/l    | move left/down/up/right (vim-like keybindings)               |
 | `ENTER`    | edit entry                                                   |
+| E          | edit task description                                        |
 | p          | edit task priority                                           |
 | 1-9        | move entry to column N                                       |
 | +/-        | add/remove tags                                              |
-| z          | toggle visibility of metadata                                |
+| z          | toggle visibility of task description                        |
+| Z          | toggle visibility of metadata                                |
 | /          | filter entries by regex                                      |
 | o          | open first URL in task description in Firefox                |
 | A          | add new entry                                                |

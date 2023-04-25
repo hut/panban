@@ -64,6 +64,25 @@ class Handler(panban.api.Handler):
 
         return self.response()
 
+    def cmd_changedescription(self, query):
+        self.load_data(query.source)
+
+        uid = query.arguments['item_id']
+        vtodo = self.vtodos_by_id[uid]
+        if 'description' in vtodo:
+            old_value = str(vtodo['description'])
+        else:
+            old_value = None
+        new_value = query.arguments['new_description']
+        if old_value != new_value:
+            if new_value is None:
+                del vtodo['description']
+            else:
+                vtodo['description'] = new_value
+            self._write_vtodo(vtodo)
+
+        return self.response()
+
     def cmd_changeprio(self, query):
         self.load_data(query.source)
 
@@ -349,10 +368,16 @@ class Handler(panban.api.Handler):
             else:
                 completion_date = None
 
+            if 'description' in vtodo:
+                description = str(vtodo['description'])
+            else:
+                description = None
+
             pnode = self.make_node(
                 uid=uid,
                 label=str(vtodo['summary']),
                 parent=self.categories[ROOT_CATEGORY].children[column_index],
+                description=description,
                 prio=VTODO_PRIO_MAP_REVERSE[vtodo.get('priority', None)],
                 tags=categories,
                 creation_date=creation_date,
@@ -435,10 +460,11 @@ class Handler(panban.api.Handler):
         today = datetime.date.today().strftime(ISO_DATE)
         return due_date <= today
 
-    def make_node(self, uid, label, parent, pos=None, prio=0, tags=None, creation_date=None, completion_date=None):
+    def make_node(self, uid, label, parent, description=None, pos=None, prio=0, tags=None, creation_date=None, completion_date=None):
         pnode = PortableNode()
         pnode.label = label
         pnode.id = uid
+        pnode.description = description
         pnode.pos = pos
         pnode.prio = prio
         pnode.tags = tags or []
@@ -461,6 +487,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_changeprio(query)
         elif command == 'change_tags':
             response = self.cmd_changetags(query)
+        elif command == 'change_description':
+            response = self.cmd_changedescription(query)
         elif command == 'add_node':
             response = self.cmd_addnode(query)
         elif command == 'sync':

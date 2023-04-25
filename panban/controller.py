@@ -167,6 +167,7 @@ class Node(object):
         node.id = portable_node.id
         node.children = portable_node.children
         node.parent = portable_node.parent
+        node.description = portable_node.description
         node.prio = portable_node.prio
         node.tags = portable_node.tags
         node.creation_date = portable_node.creation_date
@@ -233,6 +234,14 @@ class Node(object):
         self.label = new_label
         self._update()
         self.db.last_modification = time.time()  # TODO: doesn't refresh view?
+        return True
+
+    def change_description(self, new_description):
+        response = self.db.command('change_description', item_id=self.id,
+            new_description=new_description)
+        self.description = new_description
+        self._update()
+        self.db.last_modification = time.time()
         return True
 
     def change_prio(self, prio):

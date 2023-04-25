@@ -281,12 +281,19 @@ class EntryButton(urwid.Button):
         self.ui = ui
         self.columnbox = columnbox
         self.entry = entry
-        if not self.ui.kanban_layout.hide_metadata:
-            label = "{0.label} [prio={0.prio} id={1} tags={2} create={0.creation_date} complete={0.completion_date}]".format(entry, entry.id[:8], ','.join(entry.tags or ('None', )))
-        else:
-            label = entry.label
-        super(EntryButton, self).__init__(label)
+        super().__init__(self._generate_button_text())
         urwid.connect_signal(self, 'click', EntryButton.edit_label)
+
+    def _generate_button_text(self):
+        if not self.ui.kanban_layout.hide_metadata:
+            return "{0.label} [prio={0.prio} id={1} tags={2} create={0.creation_date} complete={0.completion_date}]\n{0.description}".format(
+                    self.entry,
+                    self.entry.id[:8],
+                    ','.join(self.entry.tags or ('None', )))
+        elif not self.ui.kanban_layout.hide_description and self.entry.description:
+            return "{0.label}\n{0.description}".format(self.entry)
+        else:
+            return self.entry.label
 
     def edit_label(self):
         self._old_label = self.entry.label
@@ -317,6 +324,14 @@ class EntryButton(urwid.Button):
         elif key == 'p':
             # NOTE: if you change the key for this binding, update exit_key:
             self.ui.user_choice_prio(self.entry, exit_key='p')
+        elif key == 'E':
+            new_descr = self.ui.edit_string_externally(self.entry.description or '')
+            if new_descr == '':
+                new_descr = None
+            self.entry.change_description(new_descr)
+            # TODO: This reload/rebuild is excessive and should be handled by updating the cache instead
+            self.ui.db.reload()
+            self.ui.rebuild()
         elif key == 'A':
             self.ui._add_node(self.columnbox.column.id, self.entry.prio)
         elif key in tuple('123456789'):
@@ -513,6 +528,7 @@ class KanbanLayout(urwid.Columns):
         self.active_tab_nr = 0
         self.first_load = True
         self.hide_metadata = not self.ui.debug
+        self.hide_description = True
         super(KanbanLayout, self).__init__([], dividechars=1)
         for key, value in VIM_KEYS.items():
             self._command_map[key] = value
@@ -563,6 +579,9 @@ class KanbanLayout(urwid.Columns):
     def keypress(self, size, key):
         key = super().keypress(size, key)
         if key == 'z':
+            self.hide_description ^= True
+            self.ui.rebuild()
+        elif key == 'Z':
             self.hide_metadata ^= True
             self.ui.rebuild()
         else:
