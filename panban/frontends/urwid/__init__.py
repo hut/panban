@@ -400,6 +400,12 @@ class Base(urwid.WidgetPlaceholder):
             self.reload()
         elif key == '/':
             self.ui.edit_string_async('', 'Regex Filter', self._apply_filter)
+        elif key == 'esc':
+            if self.ui.filter_regex:
+                self.ui.filter_regex = None
+                self.ui.rebuild()
+            elif self.ui.kanban_layout.active_tab_nr != 0:
+                self.ui.kanban_layout.change_tab_by_node_id(self.ui.tabs[0].id)
         elif key == 'y':
             self.ui.deactivate()
             self.ui.db.sync()
