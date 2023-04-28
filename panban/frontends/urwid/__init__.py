@@ -419,7 +419,6 @@ class MenuBox(urwid.ListBox):
         self.list_walker = urwid.SimpleFocusListWalker([])
         super(MenuBox, self).__init__(self.list_walker)
 
-
     def keypress(self, size, key):
         key = super().keypress(size, key)
         if key in ('tab', 'q'):
