@@ -427,7 +427,7 @@ class MenuBox(urwid.ListBox):
 
     def keypress(self, size, key):
         key = super().keypress(size, key)
-        if key in ('tab', 'q'):
+        if key in ('tab', 'q', 'esc'):
             self.ui.base._close_popup()
         # Do NOT return the key here to block downstream key bindings
 
@@ -469,7 +469,7 @@ class ChoiceMenuBox(urwid.ListBox):
 
     def keypress(self, size, key):
         key = super().keypress(size, key)
-        if key in ('tab', 'q', self.ui._choice_exit_key):
+        if key in ('tab', 'q', 'esc', self.ui._choice_exit_key):
             self.ui.base._close_popup()
         # Do NOT return the key here to block downstream key bindings
 
