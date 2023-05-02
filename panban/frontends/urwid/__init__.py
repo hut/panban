@@ -301,11 +301,88 @@ class UI(object):
         self.last_rebuild = time.time()
 
         root_nodes = self.db.get_root_nodes()
+        self._apply_priorities_from_task_description(root_nodes)
         root_nodes.sort(key=lambda node: node.label)
         root_nodes.sort(key=lambda node: -(node.prio or 0))
         self.tabs = root_nodes
         self.kanban_layout.reload()
         self.menu.reload()
+
+    def _apply_priorities_from_task_description(self, root_nodes):
+        # (Written on 2023-05-02. Details may have changed since then)
+        # This is a hacky/temporary method to solve this problem:
+        #
+        # Tags in the tag list are sorted by priority, but there is no way to
+        # assign priorities or any kind of metadata to tags in most backends.
+        #
+        # As a workaround, this method will look for a task called
+        # "Tag Priorities" in the database which should have a description
+        # string that is a valid panban database in markdown format.
+        # If this markdown DB has columns of the name "High", "Medium", "Low",
+        # and/or "None", the tasks within these columns will cause the tags in
+        # the original DB to get priorities assigned to 3, 2, 1, or 0
+        # respectively.
+        #
+        # Example:
+        #
+        # If the description of the task "Tag Priorities" is the following:
+        #
+        #     # High
+        #
+        #     - career
+        #     - family
+        #
+        #     # Foobar
+        #
+        #     - exercise
+        #
+        # Then the tags "career" and "family" will get a priority of 3, while
+        # the tag "exercise" will remain with the default priority.
+        #
+        # This description is edited in the easiest way with the "B" key which
+        # opens the description of the task in a separate panban board.
+
+        from panban.backends import markdown
+        from panban.controller import DatabaseAbstraction
+        import io
+
+        prio_node = None
+        for uid, task in self.db.nodes_by_id.items():
+            if task.label == 'Tag Priorities':
+                prio_node = task
+                break
+
+        if not task.description:
+            return
+
+        def get_tag_priorities(markdown_string):
+            handler = markdown.Handler(json_api='1')
+            nodes = handler.load_markdown_string(task.description)
+            root_ids = [uid for uid, node in nodes.items()
+                if not node.parent]
+            columns = [node for node in nodes.values()
+                if node.parent in root_ids]
+            priority_map = {
+                'High': 3,
+                'Medium': 2,
+                'Low': 1,
+                'None': 0,
+            }
+            tag_priorities = dict()
+            for column in columns:
+                try:
+                    prio = priority_map[column.label]
+                except KeyError:
+                    continue
+                for child_id in column.children:
+                    child = nodes[child_id]
+                    tag_priorities[child.label] = prio
+            return tag_priorities
+
+        tag_priorities = get_tag_priorities(task.description)
+        for node in root_nodes:
+            if node.label in tag_priorities:
+                node.prio = tag_priorities[node.label]
 
 
 class DummyButton(urwid.Button):
