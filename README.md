@@ -15,23 +15,24 @@ consistent UI.  Currently supported data formats are:
 
 # Key bindings
 
-| key        | action                                         |
-|------------|------------------------------------------------|
-| h/j/k/l    | move left/down/up/right (vim-like keybindings) |
-| `ENTER`    | edit task label                                |
-| E          | edit task description                          |
-| p          | edit task priority                             |
-| 1-9        | move task to column N                          |
-| +/-        | add/remove tags                                |
-| z          | toggle visibility of task description          |
-| Z          | toggle visibility of metadata                  |
-| /          | filter entries by regex                        |
-| o          | open first URL in task description in Firefox  |
-| A          | add new task                                   |
-| X          | delete task                                    |
-| R          | reload tasks                                   |
-| q or `TAB` | change the tab/project                         |
-| Q          | quit                                           |
+| key        | action                                                           |
+|------------|------------------------------------------------------------------|
+| h/j/k/l    | move left/down/up/right (vim-like keybindings)                   |
+| `ENTER`    | edit task label                                                  |
+| E          | edit task description                                            |
+| p          | edit task priority                                               |
+| 1-9        | move task to column N                                            |
+| +/-        | add/remove tags                                                  |
+| z          | toggle visibility of task description                            |
+| Z          | toggle visibility of metadata                                    |
+| /          | filter entries by regex                                          |
+| o          | open first URL in task description in Firefox                    |
+| A          | add new task                                                     |
+| X          | delete task                                                      |
+| R          | reload tasks                                                     |
+| q or `TAB` | change the tab/project                                           |
+| B          | Experimental: Edit task description as markdown panban sub-board |
+| Q          | quit                                                             |
 
 As of 2019-04-22, it is necessary to reload after certain operations to ensure
 that the program doesn't crash.  To be on the safe side, just reload the data

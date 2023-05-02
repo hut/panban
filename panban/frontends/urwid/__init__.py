@@ -152,6 +152,37 @@ class UI(object):
             pass
         self.reactivate()
 
+    def edit_in_panban(self, string, callback, backend):
+        """WARNING: Experimental, may cause data loss"""
+
+        # Sanity checks.
+        if not string:
+            return
+        if len(string) < 10:
+            return
+        if backend == 'markdown':
+            if string.count('#') < 2:
+                return
+
+        # Write temporary file
+        tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
+        filename = tmp.name
+        tmp.write(string)
+        tmp.close()
+
+        # Call a sub-panban
+        self.system(['panban', '--backend', backend, filename])
+
+        # Read temporary file for changes & delete it
+        with open(filename, 'r') as f:
+            new_string = f.read().rstrip('\n')
+        os.unlink(filename)
+
+        # Finish up
+        if string != new_string:
+            callback(new_string)
+        self.reload()
+
     def edit_string_externally(self, string=''):
         tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
         filename = tmp.name
@@ -347,6 +378,10 @@ class EntryButton(urwid.Button):
             self.ui.rebuild()
         elif key == 'A':
             self.ui._add_node(self.columnbox.column.id, self.entry.prio)
+        elif key == 'B':
+            self.ui.edit_in_panban(self.entry.description,
+                                   callback=self.entry.change_description,
+                                   backend='markdown')
         elif key in tuple('123456789'):
             key_int = ord(key) - ord('1')
             tab = self.ui.tabs[self.ui.kanban_layout.active_tab_nr]
