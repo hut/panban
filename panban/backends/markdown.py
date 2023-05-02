@@ -70,30 +70,33 @@ class Handler(panban.api.Handler):
         if not os.path.exists(filename):
             raise exceptions.SourceFileDoesNotExist(filename)
 
+        with open(filename, 'r') as f:
+            markdown_string = f.read()
+        return self.load_markdown_string(markdown_string)
+
+    def load_markdown_string(self, markdown_string):
         # TODO: use proper markdown parser
         current_column = None
         parent = None
-        path = [filename, '', '']
         nodes_by_id = {}
-        root_node = self.make_node(filename, None, 0)
+        root_node = self.make_node("All Tasks", None, 0)
         nodes_by_id[root_node.id] = root_node
-        with open(filename, 'r') as f:
-            for line in f:
-                line = line.rstrip()
-                if line.startswith('# '):
-                    label = line[2:]
-                    if label:
-                        pos = len(root_node.children)
-                        parent = self.make_node(label, root_node, pos)
-                        root_node.children.append(parent.id)
-                        nodes_by_id[parent.id] = parent
-                elif line.startswith('- '):
-                    label = line[2:]
-                    if label and parent:
-                        pos = len(parent.children)
-                        entry = self.make_node(label, parent, pos)
-                        parent.children.append(entry.id)
-                        nodes_by_id[entry.id] = entry
+        for line in markdown_string.split('\n'):
+            line = line.rstrip()
+            if line.startswith('# '):
+                label = line[2:]
+                if label:
+                    pos = len(root_node.children)
+                    parent = self.make_node(label, root_node, pos)
+                    root_node.children.append(parent.id)
+                    nodes_by_id[parent.id] = parent
+            elif line.startswith('- '):
+                label = line[2:]
+                if label and parent:
+                    pos = len(parent.children)
+                    entry = self.make_node(label, parent, pos)
+                    parent.children.append(entry.id)
+                    nodes_by_id[entry.id] = entry
         return nodes_by_id
 
     def make_node(self, label, parent, pos):
