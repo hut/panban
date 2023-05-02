@@ -488,9 +488,10 @@ class MenuBox(urwid.ListBox):
         self.list_walker[:] = []
         for entry in self.ui.tabs:
             button = MenuButton(self.ui, entry.label, entry.id)
+            color = COLOR_MAP_BY_PRIO[entry.prio]
             urwid.connect_signal(button, 'click',
                     lambda button: button.click())
-            button = urwid.AttrMap(button, 'button', 'button_focused')
+            button = urwid.AttrMap(button, color, color + '_focused')
             self.list_walker.append(button)
         if not focus:  # Avoid starting with the bottom item focused
             self.list_walker.set_focus(0)
