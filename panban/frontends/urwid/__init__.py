@@ -94,18 +94,23 @@ class UI(object):
             if line.startswith('#') or line.startswith('/'):
                 continue
             components = line.split()
-            if len(components) != 3:
+
+            # Components are: (see https://urwid.org/tutorial)
+            # - Name of the display attribute, typically a string
+            # - Foreground color and settings for 16-color (normal) mode
+            # - Background color for normal mode
+            # - Settings for monochrome mode (optional)
+            # - Foreground color and settings for 88 and 256-color modes (optional)
+            # - Background color for 88 and 256-color modes (optional)
+            if len(components) not in (3, 4, 6):
                 continue
-            tag, fg, bg = components
-            if tag == 'default':
-                tag = None
-            fg = fg.replace('_', ' ')
-            bg = bg.replace('_', ' ')
-            if fg == '/':
-                fg = ''
-            if bg == '/':
-                bg = ''
-            palette.append((tag, fg, bg))
+            if components[0] == 'default':
+                components[0] = None
+            for i in range(1, len(components)):
+                components[i] = components[i].replace('_', ' ')
+                if components[i] == '/':
+                    components[i] = ''
+            palette.append(tuple(components))
         return palette
 
     def activate(self):
@@ -114,6 +119,10 @@ class UI(object):
             self.reload()
             self.menu.reload()
             self.loop = urwid.MainLoop(self.base, self.palette)
+            try:
+                self.loop.screen.set_terminal_properties(colors=256)
+            except:
+                pass
         else:
             raise Exception("Do not call UI.activate() more than once!")
 
@@ -618,7 +627,7 @@ class ColumnBox(urwid.ListBox):
         else:
             label = self.label
 
-        palette_keys = [key for (key, fg, bg) in self.ui.palette]
+        palette_keys = [component[0] for component in self.ui.palette]
         palette_key = 'header_' + self.label.lower().replace(' ', '_')
         if palette_key in palette_keys:
             styling = palette_key
