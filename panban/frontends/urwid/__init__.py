@@ -240,7 +240,7 @@ class UI(object):
             self.reload()
 
     def user_choice_removetag(self, node, exit_key=None):
-        options = [CHOICE_ABORT] + node.tags
+        options = [CHOICE_ABORT] + sorted(node.tags)
         self.user_choice(
             options=options,
             callback=self._user_choice_removetag_callback,
