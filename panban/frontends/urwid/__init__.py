@@ -291,7 +291,6 @@ class EntryButton(urwid.Button):
         self.columnbox = columnbox
         self.entry = entry
         super().__init__(self._generate_button_text())
-        urwid.connect_signal(self, 'click', EntryButton.edit_label)
 
     def _generate_button_text(self):
         if not self.ui.kanban_layout.hide_metadata:
@@ -317,7 +316,12 @@ class EntryButton(urwid.Button):
             self.ui.rebuild()
 
     def keypress(self, size, key):
+        if key == 'enter':
+            self.edit_label()
+            return
+
         key = super(EntryButton, self).keypress(size, key)
+
         if key == 'X':
             self.entry.delete()
         elif key == 'o':
