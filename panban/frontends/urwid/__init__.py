@@ -40,7 +40,7 @@ button          / /
 button_focused  standout /
 
 header              light_gray,standout /
-header_todo         dark_gray,standout /
+header_todo         dark_blue,standout /
 header_backlog      dark_gray,standout /
 header_active       dark_red,standout /
 header_in_progress  dark_red,standout /
