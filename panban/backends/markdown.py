@@ -49,6 +49,16 @@ class Handler(panban.api.Handler):
         self.dump_markdown(nodes, filename)
         return self.response()
 
+    def cmd_changelabel(self, query):
+        filename = query.source
+        nodes_by_id = self.load_markdown(filename)
+
+        node = nodes_by_id[query.arguments['item_id']]
+        node.label = query.arguments['new_label']
+
+        self.dump_markdown(nodes_by_id, filename)
+        return self.response()
+
     def cmd_addnode(self, query):
         filename = query.source
         label = query.arguments['label']
@@ -152,6 +162,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_moveitemstocolumn(query)
         elif command == 'delete_nodes':
             response = self.cmd_deleteitems(query)
+        elif command == 'change_label':
+            response = self.cmd_changelabel(query)
         elif command == 'add_node':
             response = self.cmd_addnode(query)
         else:
