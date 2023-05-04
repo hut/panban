@@ -84,6 +84,7 @@ class UI(object):
         self.kanban_layout = KanbanLayout(self)
         self.base = Base(self, db, self.kanban_layout, self.menu, self.choice_menu)
         self.tabs = None
+        self.tag_priorities = dict()
 
         self._original_urwid_SHOW_CURSOR = urwid.escape.SHOW_CURSOR
 
@@ -216,7 +217,9 @@ class UI(object):
         self.base._open_choice_popup()
 
     def user_choice_addtag(self, node, exit_key=None):
-        possible_new_tags = list(sorted(set(self.db.all_tags) - set(node.tags)))
+        possible_new_tags = list(set(self.db.all_tags) - set(node.tags))
+        possible_new_tags.sort()
+        possible_new_tags.sort(key=lambda tag: -self.tag_priorities.get(tag, 0))
         options = [CHOICE_ABORT] + possible_new_tags + [CHOICE_NEW_TAG]
         self.user_choice(
             options=options,
@@ -379,10 +382,10 @@ class UI(object):
                     tag_priorities[child.label] = prio
             return tag_priorities
 
-        tag_priorities = get_tag_priorities(task.description)
+        self.tag_priorities = get_tag_priorities(task.description)
         for node in root_nodes:
-            if node.label in tag_priorities:
-                node.prio = tag_priorities[node.label]
+            if node.label in self.tag_priorities:
+                node.prio = self.tag_priorities[node.label]
 
 
 class DummyButton(urwid.Button):
