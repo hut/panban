@@ -49,6 +49,23 @@ class Handler(panban.api.Handler):
         self.dump_markdown(nodes, filename)
         return self.response()
 
+    def cmd_addnode(self, query):
+        filename = query.source
+        label = query.arguments['label']
+        column_id = query.arguments['target_column']
+
+        nodes_by_id = self.load_markdown(filename)
+
+        parent = nodes_by_id[column_id]
+        pos = len(parent.children)
+
+        new_node = self.make_node(label, column_id, pos)
+        parent.children.append(new_node.id)
+        nodes_by_id[new_node.id] = new_node
+
+        self.dump_markdown(nodes_by_id, filename)
+        return self.response()
+
     def load_markdown(self, filename):
         """
         >>> h = Handler(json_api='1')
@@ -135,6 +152,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_moveitemstocolumn(query)
         elif command == 'delete_nodes':
             response = self.cmd_deleteitems(query)
+        elif command == 'add_node':
+            response = self.cmd_addnode(query)
         else:
             raise exceptions.InvalidCommandError(command)
         return response.to_json()
