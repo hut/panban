@@ -26,7 +26,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('-f', '--frontend', type=str, default='urwid',
             help='Which frontend? Choices: ' + frontend_choices)
-    parser.add_argument('-b', '--backend', type=str, default='markdown', 
+    parser.add_argument('-b', '--backend', type=str, default='markdown',
             help='Which database type? Choices: ' + backend_choices)
     parser.add_argument('-T', '--theme', type=str, default='-', metavar='PATH',
             help='Load color theme from file, on top of default theme')
