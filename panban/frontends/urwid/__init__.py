@@ -49,6 +49,9 @@ header_urgent       light_magenta,standout /
 header_next         dark_blue,standout /
 """
 
+ACTIVE_COLUMNS = ['active']
+DONE_COLUMNS = ['finished', 'done']
+
 COLOR_MAP_BY_PRIO = {
     0: 'prio0',
     1: 'prio1',
@@ -757,8 +760,8 @@ class ColumnBox(urwid.ListBox):
         self.list_walker.append(urwid.AttrMap(urwid.Text(label), styling))
         self.list_walker.append(urwid.Divider())
 
-        done = self.label.lower() in ('finished', 'done')
-        active = self.label.lower() in ('active', )
+        done = self.label.lower() in DONE_COLUMNS
+        active = self.label.lower() in ACTIVE_COLUMNS
         nodes = list(column.getChildrenNodes())
 
         if self.ui.filter_regex:
