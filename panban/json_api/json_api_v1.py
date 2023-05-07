@@ -42,7 +42,7 @@ class JSONEncoder(json.JSONEncoder):
                 this_api_module = sys.modules[__name__]
                 return obj.to_json(this_api_module)
         else:
-            return super(JSONEncoder, self).default(obj)
+            return super().default(obj)
 
 
 def generate_node_id(node, debug=False):

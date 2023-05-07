@@ -431,7 +431,7 @@ class EntryButton(urwid.Button):
             self.edit_label()
             return
 
-        key = super(EntryButton, self).keypress(size, key)
+        key = super().keypress(size, key)
 
         if key == 'X':
             self.entry.delete()
@@ -475,7 +475,7 @@ class EntryButton(urwid.Button):
 
 class Base(urwid.WidgetPlaceholder):
     def __init__(self, ui, db, content, menu, choice_menu):
-        super(Base, self).__init__(content)
+        super().__init__(content)
         self.content_widget = content
         self.menu_widget = menu
         self.ui = ui
@@ -551,7 +551,7 @@ class MenuBox(urwid.ListBox):
     def __init__(self, ui):
         self.ui = ui
         self.list_walker = urwid.SimpleFocusListWalker([])
-        super(MenuBox, self).__init__(self.list_walker)
+        super().__init__(self.list_walker)
 
     def keypress(self, size, key):
         key = super().keypress(size, key)
@@ -581,7 +581,7 @@ class MenuButton(urwid.Button):
     button_left = urwid.Text("")
     button_right = urwid.Text("")
     def __init__(self, ui, label, node_id):
-        super(MenuButton, self).__init__(label)
+        super().__init__(label)
         self.ui = ui
         self.node_id = node_id
 
@@ -594,7 +594,7 @@ class ChoiceMenuBox(urwid.ListBox):
     def __init__(self, ui):
         self.ui = ui
         self.list_walker = urwid.SimpleFocusListWalker([])
-        super(ChoiceMenuBox, self).__init__(self.list_walker)
+        super().__init__(self.list_walker)
 
     def keypress(self, size, key):
         key = super().keypress(size, key)
@@ -625,7 +625,7 @@ class ChoiceMenuButton(urwid.Button):
     button_left = urwid.Text("")
     button_right = urwid.Text("")
     def __init__(self, menu, ui, value, label):
-        super(ChoiceMenuButton, self).__init__(label)
+        super().__init__(label)
         self.ui = ui
         self.menu = menu
         self.value = value
@@ -663,7 +663,7 @@ class KanbanLayout(urwid.Columns):
         self.first_load = True
         self.hide_metadata = not self.ui.debug
         self.hide_description = True
-        super(KanbanLayout, self).__init__([], dividechars=1)
+        super().__init__([], dividechars=1)
         for key, value in VIM_KEYS.items():
             self._command_map[key] = value
 
@@ -727,7 +727,7 @@ class ColumnBox(urwid.ListBox):
         self.label = column.label
         self.column = column
         self.list_walker = urwid.SimpleFocusListWalker([])
-        super(ColumnBox, self).__init__(self.list_walker)
+        super().__init__(self.list_walker)
         for key, value in VIM_KEYS.items():
             self._command_map[key] = value
 
@@ -811,7 +811,7 @@ class ColumnBox(urwid.ListBox):
             self.list_walker.set_focus(0)
 
     def keypress(self, size, key):
-        key = super(ColumnBox, self).keypress(size, key)
+        key = super().keypress(size, key)
         if key == 'A':
             # This is only reached when there is no focused node in the column
             self.ui._add_node(self.column.id, DEFAULT_PRIO)

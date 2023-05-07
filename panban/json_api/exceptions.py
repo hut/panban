@@ -4,7 +4,7 @@ class NoSuchJSONAPIVersionException(Exception):
 class JSONAPIVersionUnsupportedByServer(Exception):
     def __init__(self, supported_versions):
         self.supported_versions = supported_versions
-        super(JSONAPIVersionUnsupportedByServer, self).__init__()
+        super().__init__()
 
 class NoCommonJSONAPIVersions(Exception):
     pass
