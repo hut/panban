@@ -769,8 +769,6 @@ class ColumnBox(urwid.ListBox):
         if done:
             nodes.sort(key=lambda node: node.completion_date or '0000-00-00')
             nodes.reverse()
-        elif active:
-            pass
         else:
             nodes.sort(key=lambda node: -(node.prio or 0))
 
