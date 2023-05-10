@@ -2,7 +2,7 @@
 
 # Panban
 
-NOTE: This project is a work in progress and is not suitable for general use.
+**⚠️ This is not production-ready software. This project is in active development ⚠️**
 
 A modular kanban tool with swappable front-ends and database interfaces.  It
 allows you to view various kinds of structured data as a kanban board, with a
