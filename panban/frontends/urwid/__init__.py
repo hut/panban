@@ -407,13 +407,13 @@ class EntryButton(urwid.Button):
         super().__init__(self._generate_button_text())
 
     def _generate_button_text(self):
+        e = self.entry
         if not self.ui.kanban_layout.hide_metadata:
-            return "{0.label} [prio={0.prio} id={1} tags={2} create={0.creation_date} complete={0.completion_date}]\n{0.description}".format(
-                    self.entry,
-                    self.entry.id[:8],
-                    ','.join(self.entry.tags or ('None', )))
+            tags = ','.join(self.entry.tags or ('None', ))
+            return f"{e.label} [prio={e.prio} id={e.id[:8]} tags={tags} " + \
+                f"create={e.creation_date} complete={e.completion_date}]\n{e.description}"
         elif not self.ui.kanban_layout.hide_description and self.entry.description:
-            return "{0.label}\n{0.description}".format(self.entry)
+            return f"{e.label}\n{e.description}"
         else:
             return self.entry.label
 
