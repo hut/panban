@@ -11,8 +11,13 @@ def main():
 
     backend = backend_module.Handler()
     controller = DatabaseAbstraction(backend, args.source[0])
-    frontend = frontend_module.UI(controller,
-            initial_tab=args.tab, debug=args.debug, theme=theme)
+    frontend = frontend_module.UI(
+        controller,
+        initial_tab=args.tab,
+        debug=args.debug,
+        theme=theme,
+        use_titlebar=args.titlebar,
+    )
     frontend.main()
 
 def parse_arguments():
@@ -34,6 +39,8 @@ def parse_arguments():
             help='Enable debugging features')
     parser.add_argument('-t', '--tab', type=str,
             help='Change the default starting tab')
+    parser.add_argument('--no-titlebar', dest='titlebar', action='store_false',
+            help='Hide the title bar', default=True)
     parser.add_argument('source', type=str, nargs=1, metavar='DATABASE_SOURCE')
     args = parser.parse_args()
     return args

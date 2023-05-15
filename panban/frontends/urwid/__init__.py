@@ -70,12 +70,13 @@ CHOICE_NEW_TAG = '[New Tag]'
 
 
 class UI(object):
-    def __init__(self, db, initial_tab=None, debug=False, theme=None):
+    def __init__(self, db, initial_tab=None, debug=False, theme=None, use_titlebar=True):
         self.db = db
         self.loop = None
         self.debug = debug
         self.initial_tab = initial_tab
         self.filter_regex = None
+        self.use_titlebar = use_titlebar
 
         self.theme = DEFAULT_THEME
         if theme is not None:
@@ -750,15 +751,16 @@ class ColumnBox(urwid.ListBox):
         else:
             label = self.label
 
-        palette_keys = [component[0] for component in self.ui.palette]
-        palette_key = 'header_' + self.label.lower().replace(' ', '_')
-        if palette_key in palette_keys:
-            styling = palette_key
-        else:
-            styling = 'header'
+        if self.ui.use_titlebar:
+            palette_keys = [component[0] for component in self.ui.palette]
+            palette_key = 'header_' + self.label.lower().replace(' ', '_')
+            if palette_key in palette_keys:
+                styling = palette_key
+            else:
+                styling = 'header'
 
-        self.list_walker.append(urwid.AttrMap(urwid.Text(label), styling))
-        self.list_walker.append(urwid.Divider())
+            self.list_walker.append(urwid.AttrMap(urwid.Text(label), styling))
+            self.list_walker.append(urwid.Divider())
 
         done = self.label.lower() in DONE_COLUMNS
         active = self.label.lower() in ACTIVE_COLUMNS
