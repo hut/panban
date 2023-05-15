@@ -13,6 +13,8 @@ from panban.api import UserFacingException
 from panban.json_api.eternal import (
         PortableCommand, PortableResponse, PortableNode)
 
+IMPORTANT_TAG = 'important'
+
 class DatabaseAbstraction(object):
     def __init__(self, backend_handler, source):
         self.handler = backend_handler
@@ -186,6 +188,9 @@ class Node(object):
             else:
                 raise ValueError("Node with ID %s is child of %s but was not "
                     "found in database!" % (node_id, self.id))
+
+    def is_important(self):
+        return IMPORTANT_TAG in self.tags
 
     def delete(self):
         if self.parent is None:

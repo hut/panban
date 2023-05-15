@@ -38,6 +38,8 @@ prio3           light_red /
 prio3_focused   light_red,standout /
 button          / /
 button_focused  standout /
+important       light_magenta /
+important_focused light_magenta,standout /
 
 header              light_gray,standout /
 header_todo         dark_blue,standout /
@@ -409,6 +411,8 @@ class EntryButton(urwid.Button):
 
     def _generate_button_text(self):
         e = self.entry
+        if self.entry.is_important():
+            self.button_left = urwid.Text("▲")
         if not self.ui.kanban_layout.hide_metadata:
             tags = ','.join(self.entry.tags or ('None', ))
             return f"{e.label} [prio={e.prio} id={e.id[:8]} tags={tags} " + \
@@ -416,11 +420,12 @@ class EntryButton(urwid.Button):
         elif not self.ui.kanban_layout.hide_description and self.entry.description:
             return f"{e.label}\n{e.description}"
         else:
-            return self.entry.label
+            return e.label
 
     def edit_label(self):
         self._old_label = self.entry.label
         self.ui.base._open_edit_popup(self.entry.label, "Task Title", self._edit_callback)
+        # TODO: update EntryButton content
 
     def _edit_callback(self, new_label):
         if new_label.strip() and self._old_label != new_label:
@@ -800,7 +805,10 @@ class ColumnBox(urwid.ListBox):
             previous_group = group
 
             widget = EntryButton(self.ui, self, entry)
-            color = COLOR_MAP_BY_PRIO[entry.prio]
+            if entry.is_important():
+                color = 'important'
+            else:
+                color = COLOR_MAP_BY_PRIO[entry.prio]
             widget = urwid.AttrMap(widget, color, color + '_focused')
             self.list_walker.append(widget)
 
