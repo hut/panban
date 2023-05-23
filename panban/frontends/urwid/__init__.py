@@ -532,7 +532,7 @@ class Base(urwid.WidgetPlaceholder):
         if key in ('tab', 'q'):
             self.flip()
         elif key == 'Q':
-            raise SystemExit(0)
+            raise urwid.ExitMainLoop()
         elif key == 'R':
             self.reload()
         elif key == '/':
