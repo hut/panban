@@ -417,10 +417,14 @@ class EntryButton(urwid.Button):
             tags = ','.join(self.entry.tags or ('None', ))
             return f"{e.label} [prio={e.prio} id={e.id[:8]} tags={tags} " + \
                 f"create={e.creation_date} complete={e.completion_date}]\n{e.description}"
-        elif not self.ui.kanban_layout.hide_description and self.entry.description:
-            return f"{e.label}\n{e.description}"
         else:
-            return e.label
+            label = e.label
+            label = re.sub(r' #[^ ]+', '', label)  # Remove tags
+            label = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', label)  # Simplify links TODO: proper md parsing
+            if not self.ui.kanban_layout.hide_description and self.entry.description:
+                return f"{label}\n{e.description}"
+            else:
+                return label
 
     def edit_label(self):
         self._old_label = self.entry.label

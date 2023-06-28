@@ -7,8 +7,17 @@ import hashlib
 import argparse
 import panban.api
 import panban.json_api.eternal
-from panban.json_api.eternal import PortableResponse, PortableNode
+from panban.json_api.eternal import PortableResponse, PortableNode, DEFAULT_PRIO
 from panban.json_api import exceptions
+
+PRIO_PATTERN = r'^\(([!+-0])\) (.*)$'
+PRIO_MAP = {
+    '!': 3,
+    '+': 2,
+    '-': 1,
+    '0': 0,
+}
+PRIO_MAP_REVERSE = dict((v, k) for k, v in PRIO_MAP.items())
 
 class Handler(panban.api.Handler):
     def response(self, data=None, status=None):
@@ -119,14 +128,23 @@ class Handler(panban.api.Handler):
                     nodes_by_id[parent.id] = parent
             elif line.startswith('- '):
                 label = line[2:]
+
+                # Extract priority
+                priomatch = re.match(PRIO_PATTERN, label)
+                if priomatch:
+                    priostring, label = priomatch.groups()
+                    prio = PRIO_MAP[priostring]
+                else:
+                    prio = DEFAULT_PRIO
+
                 if label and parent:
                     pos = len(parent.children)
-                    entry = self.make_node(label, parent, pos)
+                    entry = self.make_node(label, parent, pos, prio)
                     parent.children.append(entry.id)
                     nodes_by_id[entry.id] = entry
         return nodes_by_id
 
-    def make_node(self, label, parent, pos):
+    def make_node(self, label, parent, pos, prio=DEFAULT_PRIO):
         if isinstance(parent, PortableNode):
             parent_id = parent.id
         elif isinstance(parent, str):
@@ -137,6 +155,7 @@ class Handler(panban.api.Handler):
         pnode.label = label
         pnode.parent = parent_id
         pnode.pos = pos
+        pnode.prio = prio
         pnode.id = self.json_api.generate_node_id(pnode)
         return pnode
 
@@ -150,9 +169,16 @@ class Handler(panban.api.Handler):
                 f.write("# {title}\n\n".format(title=column.label))
                 for entry_id in column.children:
                     entry = nodes[entry_id]
-                    f.write("- {entry}\n".format(entry=entry.label))
+                    f.write(self._format_line(entry))
                 if column.children and not column.label == last_title:
                     f.write("\n")
+
+    def _format_line(self, entry):
+        if entry.prio != DEFAULT_PRIO:
+            priostring = PRIO_MAP_REVERSE[entry.prio]
+            return f"- ({priostring}) {entry.label}\n"
+        else:
+            return f"- {entry.label}\n"
 
     def handle(self, query):
         command = query.command
