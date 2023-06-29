@@ -10,14 +10,7 @@ import panban.json_api.eternal
 from panban.json_api.eternal import PortableResponse, PortableNode, DEFAULT_PRIO
 from panban.json_api import exceptions
 
-PRIO_PATTERN = r'^\(([!+-0])\) (.*)$'
-PRIO_MAP = {
-    '!': 3,
-    '+': 2,
-    '-': 1,
-    '0': 0,
-}
-PRIO_MAP_REVERSE = dict((v, k) for k, v in PRIO_MAP.items())
+PRIO_PATTERN = r'^(\(|~~|\*\*)(.*)(\)|~~|\*\*)$'
 PRIO_DECORATORS = {
     0: ('~~', '~~'),
     1: ('(', ')'),
@@ -149,8 +142,8 @@ class Handler(panban.api.Handler):
                 # Extract priority
                 priomatch = re.match(PRIO_PATTERN, label)
                 if priomatch:
-                    priostring, label = priomatch.groups()
-                    prio = PRIO_MAP[priostring]
+                    left, label, right = priomatch.groups()
+                    prio = PRIO_DECORATORS_REVERSE[(left, right)]
                 else:
                     prio = DEFAULT_PRIO
 
