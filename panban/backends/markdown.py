@@ -173,22 +173,26 @@ class Handler(panban.api.Handler):
         roots = [n for n in nodes.values() if n.is_root()]
         root = roots[0]
         columns = [nodes[id] for id in root.children]
+        content = []
+        last_title = columns[-1].label if columns else None
+        for column in columns:
+            content.append("# {title}".format(title=column.label))
+            content.append("")
+            entries = [nodes[entry_id] for entry_id in list(column.children)]
+            for entry in entries:
+                content.append(self._format_line(entry))
+            if entries and not column.label == last_title:
+                content.append("")
+        finalized_content = "\n".join(content)
         with open(filename, 'w') as f:
-            last_title = columns[-1].label if columns else None
-            for column in columns:
-                f.write("# {title}\n\n".format(title=column.label))
-                for entry_id in column.children:
-                    entry = nodes[entry_id]
-                    f.write(self._format_line(entry))
-                if column.children and not column.label == last_title:
-                    f.write("\n")
+            f.write(finalized_content)
 
     def _format_line(self, entry):
         if entry.prio != DEFAULT_PRIO:
             left, right = PRIO_DECORATORS[entry.prio]
-            return f"- {left}{entry.label}{right}\n"
+            return f"- {left}{entry.label}{right}"
         else:
-            return f"- {entry.label}\n"
+            return f"- {entry.label}"
 
     def handle(self, query):
         command = query.command
