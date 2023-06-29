@@ -18,6 +18,13 @@ PRIO_MAP = {
     '0': 0,
 }
 PRIO_MAP_REVERSE = dict((v, k) for k, v in PRIO_MAP.items())
+PRIO_DECORATORS = {
+    0: ('~~', '~~'),
+    1: ('(', ')'),
+    2: ('', ''),
+    3: ('**', '**'),
+}
+PRIO_DECORATORS_REVERSE = dict((v, k) for k, v in PRIO_DECORATORS.items())
 
 class Handler(panban.api.Handler):
     def response(self, data=None, status=None):
@@ -185,8 +192,8 @@ class Handler(panban.api.Handler):
 
     def _format_line(self, entry):
         if entry.prio != DEFAULT_PRIO:
-            priostring = PRIO_MAP_REVERSE[entry.prio]
-            return f"- ({priostring}) {entry.label}\n"
+            left, right = PRIO_DECORATORS[entry.prio]
+            return f"- {left}{entry.label}{right}\n"
         else:
             return f"- {entry.label}\n"
 
