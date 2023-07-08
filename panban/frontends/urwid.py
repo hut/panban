@@ -100,6 +100,7 @@ class UI(object):
         self._choice_focus = None
         self._choice_options = None
         self._choice_quick_keys = None
+        self._choice_styles = ()
 
         self._original_urwid_SHOW_CURSOR = urwid.escape.SHOW_CURSOR
 
@@ -217,8 +218,16 @@ class UI(object):
     def edit_string_async(self, string, title, callback, callback_params=None):
         self.base._open_edit_popup(string, title, callback, callback_params)
 
-    def user_choice(self, options, callback, quick_keys=None, focus=0,
-            exit_key=None, callback_params=None):
+    def user_choice(
+            self,
+            options,
+            callback,
+            styles=(),
+            quick_keys=None,
+            focus=0,
+            exit_key=None,
+            callback_params=None
+        ):
         """
         Opens up a pop-up that lets the user choose one of the given options.
         """
@@ -226,6 +235,7 @@ class UI(object):
         self._choice_callback = callback
         self._choice_callback_params = callback_params or ()
         self._choice_options = options
+        self._choice_styles = styles
         self._choice_quick_keys = quick_keys
         self._choice_focus = focus
         self._choice_exit_key = exit_key
@@ -236,8 +246,15 @@ class UI(object):
         all_tags.sort()
         all_tags.sort(key=lambda tag: -self.tag_priorities.get(tag, 0))
         options = [CHOICE_ALL_TAGS] + all_tags
+        styles = [None]
+        for tag in all_tags:
+            prio = self.tag_priorities.get(tag, DEFAULT_PRIO)
+            style = COLOR_MAP_BY_PRIO[prio]
+            styles.append((style, style + '_focused'))
+
         self.user_choice(
             options=options,
+            styles=styles,
             callback=self._user_choice_filtertag_callback,
             exit_key=exit_key,
         )
@@ -662,10 +679,18 @@ class ChoiceMenuBox(urwid.ListBox):
         else:
             options = [(label, label) for label in self.ui._choice_options]
 
-        for value, label in options:
+        for i, option in enumerate(options):
+            value, label = option
             button = ChoiceMenuButton(self, self.ui, value, label)
+
+            styles = self.ui._choice_styles
+            if styles and i < len(styles) and styles[i] is not None:
+                style, style_focused = styles[i]
+            else:
+                style, style_focused = 'button', 'button_focused'
+
             urwid.connect_signal(button, 'click', ChoiceMenuButton.click)
-            button = urwid.AttrMap(button, 'button', 'button_focused')
+            button = urwid.AttrMap(button, style, style_focused)
             self.list_walker.append(button)
 
         if self.ui._choice_focus:
