@@ -10,8 +10,8 @@ import panban.json_api.eternal
 from panban.json_api.eternal import PortableResponse, PortableNode, DEFAULT_PRIO
 from panban.json_api import exceptions
 
-TAG_PATTERN = r' #([^ ]+)'
-TAG_FORMAT = ' #{tag}'
+TAG_PATTERN = r' \+([^ ]+)'
+TAG_FORMAT = ' +{tag}'
 TAG_FORMAT_LABEL = '{label}{tags}'
 PRIO_PATTERN = r'^(\(|~~|\*\*)(.*)(\)|~~|\*\*)$'
 PRIO_DECORATORS = {
