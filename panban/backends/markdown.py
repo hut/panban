@@ -71,6 +71,21 @@ class Handler(panban.api.Handler):
         self.dump_markdown(nodes_by_id, filename)
         return self.response()
 
+    def cmd_changedescription(self, query):
+        filename = query.source
+        nodes_by_id = self.load_markdown(filename)
+
+        node = nodes_by_id[query.arguments['item_id']]
+
+        old_value = node.description
+        new_value = query.arguments['new_description']
+
+        if new_value != old_value:
+            node.description = new_value
+            self.dump_markdown(nodes_by_id, filename)
+
+        return self.response()
+
     def cmd_changeprio(self, query):
         filename = query.source
         nodes_by_id = self.load_markdown(filename)
@@ -155,11 +170,14 @@ class Handler(panban.api.Handler):
         # TODO: use proper markdown parser
         current_column = None
         parent = None
+        entry = None
         nodes_by_id = {}
         root_node = self.make_node(source_label, None, 0)
         nodes_by_id[root_node.id] = root_node
         for line in markdown_string.split('\n'):
             line = line.rstrip()
+
+            # Extract columns
             if line.startswith('# '):
                 label = line[2:]
                 if label:
@@ -167,6 +185,8 @@ class Handler(panban.api.Handler):
                     parent = self.make_node(label, root_node, pos)
                     root_node.children.append(parent.id)
                     nodes_by_id[parent.id] = parent
+
+            # Extract tasks
             elif line.startswith('- '):
                 label = line[2:]
 
@@ -184,6 +204,15 @@ class Handler(panban.api.Handler):
                     entry = self.make_node(label, parent, pos, tags, prio)
                     parent.children.append(entry.id)
                     nodes_by_id[entry.id] = entry
+
+            # Extract task descriptions
+            elif line.startswith('    ') and entry is not None:
+                text = line[4:]
+                if entry.description is None:
+                    entry.description = text
+                else:
+                    entry.description += "\n" + text
+
         return nodes_by_id
 
     def extract_tags(self, label):
@@ -223,6 +252,9 @@ class Handler(panban.api.Handler):
             entries = [nodes[entry_id] for entry_id in list(column.children)]
             for entry in entries:
                 content.append(self._format_line(entry))
+                if entry.description is not None:
+                    for line in entry.description.split("\n"):
+                        content.append(f"    {line}")
             if entries and not column.label == last_title:
                 content.append("")
         finalized_content = "\n".join(content)
@@ -256,6 +288,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_changeprio(query)
         elif command == 'change_tags':
             response = self.cmd_changetags(query)
+        elif command == 'change_description':
+            response = self.cmd_changedescription(query)
         elif command == 'add_node':
             response = self.cmd_addnode(query)
         else:
