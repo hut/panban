@@ -1,6 +1,13 @@
 # Reference
 
-This document provides a few quick facts
+This document provides quick facts and lists about internals of Panban
+
+## List of Hidden Hacks
+
+Some things are implemented in a hacky way and are not obvious:
+
+- You can customize the order of tags in the tag list by assigning tag priorities through the special task "Tag Priorities" (see [HOWTO](HOWTO.md))
+- You can highlight a task visually by assigning the special tag "important"
 
 ## Task Attributes
 
@@ -47,35 +54,35 @@ The following command names are available:
 
 Most commands accept additional parameters:
 
-- add_node
+- `add_node`
     - `label`: a string containing the label/summary of the task
     - `prio`: a number between 0 and 3 specifying the priority of the new node
     - `target_column`: the node ID of the column into which the node should be placed
     - `tags`: a list of strings specifying the tags of the new node
-- change_description:
+- `change_description`
     - `item_id`: the node ID of the task to be edited
     - `new_description`: a string containing the new description for the node
-- change_label:
+- `change_label`
     - `item_id`: the node ID of the task to be edited
     - `new_label`: a string containing the new label for the node
-- change_prio:
+- `change_prio`
     - `item_id`: the node ID of the task to be edited
     - `prio`: an integer number between 0 and 3
-- change_tags:
+- `change_tags`
     - `item_id`: the node ID of the task to be edited
     - `tags`: a list of strings containing the tags that are to be added or removed
     - `action`: a string that specifies whether the tags should be added, removed, or cleared. The strings are defined by the following constants:
         - `panban.json_api.json_api_v1.PARAM_TAG_ADD`
         - `panban.json_api.json_api_v1.PARAM_TAG_REMOVE`
         - `panban.json_api.json_api_v1.PARAM_TAG_CLEAR`
-- delete_nodes
+- `delete_nodes`
     - `item_ids`: a list of the node IDs to be deleted
-- load_all
+- `load_all`
     - no parameters
-- move_nodes
+- `move_nodes`
     - `item_ids`: a list of the node IDs to be moved
     - `target_column`: the node ID of the column into which the nodes should be moved
-- sync
+- `sync`
     - no parameters
 
 ### Responses
@@ -95,10 +102,3 @@ Not every backend supports every feature.
 - `markdown`: All features are supported
 - `todotxt`: All features except priorities, tags, descriptions are supported
 - `github`: Read-only
-
-## List of Hidden Hacks
-
-Some things are implemented in a hacky way and are not obvious:
-
-- You can customize the order of tags in the tag list by assigning tag priorities through the special task "Tag Priorities" (see [HOWTO](HOWTO.md))
-- You can highlight a task visually by assigning the special tag "important"
