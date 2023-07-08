@@ -5,7 +5,7 @@ import sys
 import uuid
 import panban.api
 from panban.json_api import exceptions
-from panban.json_api.eternal import PortableResponse, PortableNode
+from panban.json_api.eternal import PortableResponse, PortableNode, DEFAULT_PRIO
 
 COL_TODO = '__todo'
 COL_TODAY = '__today'
@@ -326,7 +326,8 @@ class Handler(panban.api.Handler):
             self.categories[key] = category_node
 
         # First of all, add a category that every node will belong to
-        add_category('All Entries', ROOT_CATEGORY, 3)
+        source_label = os.path.basename(basedir)
+        add_category(source_label, ROOT_CATEGORY, DEFAULT_PRIO)
 
         # Then add a node for every ICS file in the directory, along with extra categories
         for filename in ics_files:
@@ -387,13 +388,10 @@ class Handler(panban.api.Handler):
             self.vtodos_by_id[uid] = vtodo
             self.node_id_to_path[uid] = path
 
-            # Add the node to its categories. Create categories that don't exist.
-            for category_label in [ROOT_CATEGORY] + categories:
-                if category_label not in self.categories:
-                    add_category(category_label)
-                category = self.categories[category_label]
-                column = self.nodes_by_id[category.children[column_index]]
-                column.children.append(pnode.id)
+            # Add the node to its category
+            category = self.categories[ROOT_CATEGORY]
+            column = self.nodes_by_id[category.children[column_index]]
+            column.children.append(pnode.id)
 
     def _extract_vtodo(self, path):
         import icalendar

@@ -69,6 +69,8 @@ PRIO_LABELS = {
 
 CHOICE_ABORT = '[Cancel]'
 CHOICE_NEW_TAG = '[New Tag]'
+CHOICE_ALL_TAG = '[All Tags]'
+CHOICE_REGEX_FILTER = '[Enter Regular Expression]'
 
 
 class UI(object):

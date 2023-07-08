@@ -118,14 +118,14 @@ class Handler(panban.api.Handler):
 
         with open(filename, 'r') as f:
             markdown_string = f.read()
-        return self.load_markdown_string(markdown_string)
+        return self.load_markdown_string(markdown_string, source_label=filename)
 
-    def load_markdown_string(self, markdown_string):
+    def load_markdown_string(self, markdown_string, source_label='from-string'):
         # TODO: use proper markdown parser
         current_column = None
         parent = None
         nodes_by_id = {}
-        root_node = self.make_node("All Tasks", None, 0)
+        root_node = self.make_node(source_label, None, 0)
         nodes_by_id[root_node.id] = root_node
         for line in markdown_string.split('\n'):
             line = line.rstrip()
