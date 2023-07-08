@@ -4,6 +4,8 @@ This document describes step-by-step instructions for solving common problems.
 
 ## Sorting Tags
 
+**Compatible backends**: caldav, markdown
+
 **Problem**: If you have many tags, it becomes inconvenient to navigate them, and you might lose sight of the most important tags, since they are sorted alphabetically by default.
 
 **Solution**: Assign priorities to tags in the tag list ("q" key) through the following method:
@@ -52,3 +54,4 @@ Once this is set up, it gets much easier to change tag priorities:
 ```
 
 - But it makes sense to add all the columns so you can easily change the priorities with the "B" key as described above.
+- It would have been preferable to assign the priority as an attribute to the tag directly, but in most backends, tags are mere strings without additional metadata. This is why this cumbersome method has been chosen, which works equally well on all backends that implement descriptions.
