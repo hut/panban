@@ -26,11 +26,11 @@ consistent UI.  Currently supported data formats are:
 | z          | toggle visibility of task description                            |
 | Z          | toggle visibility of metadata                                    |
 | /          | filter entries by regex                                          |
+| q          | filter entries by tag                                            |
 | o          | open first URL in task description in Firefox                    |
 | A          | add new task                                                     |
 | X          | delete task                                                      |
 | R          | reload tasks                                                     |
-| q or `TAB` | change the tab/project                                           |
 | B          | Experimental: Edit task description as markdown panban sub-board |
 | Q          | quit                                                             |
 

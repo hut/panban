@@ -69,8 +69,7 @@ PRIO_LABELS = {
 
 CHOICE_ABORT = '[Cancel]'
 CHOICE_NEW_TAG = '[New Tag]'
-CHOICE_ALL_TAG = '[All Tags]'
-CHOICE_REGEX_FILTER = '[Enter Regular Expression]'
+CHOICE_ALL_TAGS = '[All Tags]'
 
 
 class UI(object):
@@ -80,6 +79,7 @@ class UI(object):
         self.debug = debug
         self.initial_tab = initial_tab
         self.filter_regex = None
+        self.filter_tag = None
         self.use_titlebar = use_titlebar
 
         self.theme = DEFAULT_THEME
@@ -93,6 +93,13 @@ class UI(object):
         self.base = Base(self, db, self.kanban_layout, self.menu, self.choice_menu)
         self.tabs = None
         self.tag_priorities = dict()
+
+        self._choice_callback = None
+        self._choice_callback_params = ()
+        self._choice_exit_key = None
+        self._choice_focus = None
+        self._choice_options = None
+        self._choice_quick_keys = None
 
         self._original_urwid_SHOW_CURSOR = urwid.escape.SHOW_CURSOR
 
@@ -217,12 +224,32 @@ class UI(object):
         """
 
         self._choice_callback = callback
-        self._choice_callback_params = callback_params
+        self._choice_callback_params = callback_params or ()
         self._choice_options = options
         self._choice_quick_keys = quick_keys
         self._choice_focus = focus
         self._choice_exit_key = exit_key
         self.base._open_choice_popup()
+
+    def user_choice_filtertag(self, exit_key=None):
+        all_tags = list(self.db.all_tags)
+        all_tags.sort()
+        all_tags.sort(key=lambda tag: -self.tag_priorities.get(tag, 0))
+        options = [CHOICE_ALL_TAGS] + all_tags
+        self.user_choice(
+            options=options,
+            callback=self._user_choice_filtertag_callback,
+            exit_key=exit_key,
+        )
+
+    def _user_choice_filtertag_callback(self, choice):
+        old_filter_tag = self.filter_tag
+        if choice == CHOICE_ALL_TAGS:
+            self.filter_tag = None
+        else:
+            self.filter_tag = choice
+        if self.filter_tag != old_filter_tag:
+            self.rebuild()
 
     def user_choice_addtag(self, node, exit_key=None):
         possible_new_tags = list(set(self.db.all_tags) - set(node.tags))
@@ -536,7 +563,9 @@ class Base(urwid.WidgetPlaceholder):
 
         key = super().keypress(size, key)
         if key in ('tab', 'q'):
-            self.flip()
+            self.ui.user_choice_filtertag()
+        #elif key == 'T':
+            #self.flip()  # Open tab selection popup
         elif key == 'Q':
             raise urwid.ExitMainLoop()
         elif key == 'R':
@@ -545,9 +574,15 @@ class Base(urwid.WidgetPlaceholder):
             self.ui.edit_string_async('', 'Regex Filter', self._apply_filter)
         elif key == 'esc':
             if self.ui.filter_regex:
+                # First, ESC resets the search/regex filter
                 self.ui.filter_regex = None
                 self.ui.rebuild()
+            elif self.ui.filter_tag:
+                # The second ESC press resets the tag filter
+                self.ui.filter_tag = None
+                self.ui.rebuild()
             elif self.ui.kanban_layout.active_tab_nr != 0:
+                # The third ESC press selects the first tab
                 self.ui.kanban_layout.change_tab_by_node_id(self.ui.tabs[0].id)
         elif key == 'y':
             self.ui.deactivate()
@@ -613,7 +648,9 @@ class ChoiceMenuBox(urwid.ListBox):
 
     def keypress(self, size, key):
         key = super().keypress(size, key)
-        if key in ('tab', 'q', 'esc', self.ui._choice_exit_key):
+
+        if key in ('tab', 'q', 'esc') or (self.ui._choice_exit_key is not None
+                                          and key == self.ui._choice_exit_key):
             self.ui.base._close_popup()
         # Do NOT return the key here to block downstream key bindings
 
@@ -777,6 +814,8 @@ class ColumnBox(urwid.ListBox):
         active = self.label.lower() in ACTIVE_COLUMNS
         nodes = list(column.getChildrenNodes())
 
+        if self.ui.filter_tag:
+            nodes = [node for node in nodes if self.ui.filter_tag in node.tags]
         if self.ui.filter_regex:
             filter_regex = re.compile(self.ui.filter_regex, flags=re.I)
             nodes = [node for node in nodes if filter_regex.search(node.label)]
