@@ -518,7 +518,7 @@ class Base(urwid.WidgetPlaceholder):
     def __init__(self, ui, db, content, menu, choice_menu):
         super().__init__(content)
         self.content_widget = content
-        self.menu_widget = menu
+        self.menu_widget = menu  # Deprecated. TODO migrate to "user_choice()"
         self.ui = ui
         self.db = db
         self.choice_widget = choice_menu
