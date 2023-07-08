@@ -4,9 +4,9 @@ This document describes step-by-step instructions for solving common problems.
 
 ## Sorting Tags
 
-The tag list is sorted alphabetically by default, which makes working with a large number of tags inconvenient, since it will take a while to find the most important tags.
+**Problem**: If you have many tags, it becomes inconvenient to navigate them, and you might lose sight of the most important tags, since they are sorted alphabetically by default.
 
-However, you can prioritize tags to list them above or below other tags through the following method:
+**Solution**: Assign priorities to tags in the tag list ("q" key) through the following method:
 
 1. Create a new task in your panban board called "Tag Priorities". (This is a special keyword)
 2. Open the description of the task by pressing "E".
@@ -42,6 +42,7 @@ Once this is set up, it gets much easier to change tag priorities:
     - Each line like "# High" defines a column
     - Each line like "- tag1" defines an item in that column
 - The only columns with any effect are "High", "Medium", "Low", and "None". You can add any others but they will be ignored for the purpose of prioritizing tags.
+- A tag's default priority is "Medium".
 - You can leave out any column or any tag that you don't need. A file like this is completely valid too:
 
 ```markdown
