@@ -151,7 +151,7 @@ class Handler(panban.api.Handler):
             markdown_string = f.read()
         return self.load_markdown_string(markdown_string, source_label=filename)
 
-    def load_markdown_string(self, markdown_string, source_label='from-string'):
+    def load_markdown_string(self, markdown_string, source_label=panban.DATA_FROM_STRING):
         # TODO: use proper markdown parser
         current_column = None
         parent = None
