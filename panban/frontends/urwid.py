@@ -329,7 +329,8 @@ class UI(object):
 
     def _add_node_callback(self, new_label, column_id, prio):
         if new_label.strip():
-            self.db.add_node(new_label, column_id, prio=prio)
+            tags = [self.filter_tag] if self.filter_tag else []
+            self.db.add_node(new_label, column_id, prio=prio, tags=tags)
             # TODO: This rebuild is excessive and should be handled by updating the cache instead
             self.rebuild()
 

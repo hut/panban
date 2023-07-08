@@ -141,7 +141,7 @@ class Handler(panban.api.Handler):
 
         vtodo = icalendar.Todo()
         vtodo['summary'] = query.arguments['label']
-        if query.arguments['prio']:
+        if query.arguments['prio']: # It's intentional to skip the priority attribute if prio is 0
             vtodo['priority'] = VTODO_PRIO_MAP[query.arguments['prio']]
         vtodo['created'] = icalendar.vDatetime(datetime.datetime.now())
         vtodo['uid'] = uid = str(uuid.uuid4())
