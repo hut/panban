@@ -160,15 +160,13 @@ class Handler(panban.api.Handler):
             vtodo['due'] = icalendar.vDatetime(datetime.datetime.now())
 
         # Set tag
-        category_id = column.parent
-        if category_id != (CATEGORY_PREFIX + ROOT_CATEGORY):
-            category = self.nodes_by_id[category_id]
-            vtodo['categories'] = icalendar.prop.vCategory([category.label])
+        if query.arguments['tags']:
+            vtodo['categories'] = icalendar.prop.vCategory(query.arguments['tags'])
 
         node = self.make_node(
             uid=uid,
             label=vtodo['summary'],
-            parent=category_id,
+            parent=column.parent,
         )
 
         self.vtodos_by_id[uid] = vtodo

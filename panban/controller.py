@@ -51,9 +51,11 @@ class DatabaseAbstraction(object):
             self.nodes_by_id[node.id] = node
         self.all_tags = list(sorted(all_tags))
 
-    def add_node(self, label, parent_id, prio):
+    def add_node(self, label, parent_id, prio, tags=None):
+        if tags is None:
+            tags = []
         response = self.command('add_node', label=label,
-                target_column=parent_id, prio=prio)
+                target_column=parent_id, prio=prio, tags=tags)
         self.reload()
 
     def get_root_nodes(self):

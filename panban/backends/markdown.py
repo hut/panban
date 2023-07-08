@@ -128,6 +128,7 @@ class Handler(panban.api.Handler):
         filename = query.source
         label = query.arguments['label']
         column_id = query.arguments['target_column']
+        prio = query.arguments['prio']
 
         nodes_by_id = self.load_markdown(filename)
 
@@ -135,6 +136,13 @@ class Handler(panban.api.Handler):
         pos = len(parent.children)
 
         new_node = self.make_node(label, column_id, pos)
+
+        if query.arguments['prio'] is not None:
+            new_node.prio = query.arguments['prio']
+
+        if query.arguments['tags']:
+            new_node.tags = query.arguments['tags']
+
         parent.children.append(new_node.id)
         nodes_by_id[new_node.id] = new_node
 
