@@ -448,7 +448,6 @@ class EntryButton(urwid.Button):
                 f"create={e.creation_date} complete={e.completion_date}]\n{e.description}"
         else:
             label = e.label
-            label = re.sub(r' #[^ ]+', '', label)  # Remove tags
             label = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', label)  # Simplify links TODO: proper md parsing
             if not self.ui.kanban_layout.hide_description and self.entry.description:
                 return f"{label}\n{e.description}"

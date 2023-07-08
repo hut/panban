@@ -10,6 +10,9 @@ import panban.json_api.eternal
 from panban.json_api.eternal import PortableResponse, PortableNode, DEFAULT_PRIO
 from panban.json_api import exceptions
 
+TAG_PATTERN = r' #([^ ]+)'
+TAG_FORMAT = ' #{tag}'
+TAG_FORMAT_LABEL = '{label} #{tags}'
 PRIO_PATTERN = r'^(\(|~~|\*\*)(.*)(\)|~~|\*\*)$'
 PRIO_DECORATORS = {
     0: ('~~', '~~'),
@@ -149,12 +152,23 @@ class Handler(panban.api.Handler):
 
                 if label and parent:
                     pos = len(parent.children)
-                    entry = self.make_node(label, parent, pos, prio)
+                    label, tags = self.extract_tags(label)
+                    entry = self.make_node(label, parent, pos, tags, prio)
                     parent.children.append(entry.id)
                     nodes_by_id[entry.id] = entry
         return nodes_by_id
 
-    def make_node(self, label, parent, pos, prio=DEFAULT_PRIO):
+    def extract_tags(self, label):
+        pattern = re.compile(TAG_PATTERN)
+        match = pattern.search(label)
+        if match:
+            tags = match.groups()
+        else:
+            tags = []
+        label = pattern.sub('', label)  # Remove tags
+        return label, tags
+
+    def make_node(self, label, parent, pos, tags=(), prio=DEFAULT_PRIO):
         if isinstance(parent, PortableNode):
             parent_id = parent.id
         elif isinstance(parent, str):
@@ -166,6 +180,10 @@ class Handler(panban.api.Handler):
         pnode.parent = parent_id
         pnode.pos = pos
         pnode.prio = prio
+        if tags is None:
+            pnode.tags = []
+        else:
+            pnode.tags = list(tags)
         pnode.id = self.json_api.generate_node_id(pnode)
         return pnode
 
