@@ -9,6 +9,26 @@ Some things are implemented in a hacky way and are not obvious:
 - You can customize the order of tags in the tag list by assigning tag priorities through the special task "Tag Priorities" (see [HOWTO](HOWTO.md))
 - You can highlight a task visually by assigning the special tag "important"
 
+## Markdown Format Specification
+
+Markdown does not have an inherent way to describe kanban boards. The following format was chosen by Panban's author:
+
+- Each top-level header (lines starting with "# ") defines a column
+- Each list item under a header (lines starting with "- ") defines a task
+- Each preformatted block under a list item (lines starting with "    ", which is 4 spaces) defines the description of a task
+
+The following ways exist to assign metadata to tasks:
+
+- Tags: Add strings like ` +tag1` (the space before the `+` is mandatory) to the line, e.g. `- my task +tag1 +tag2`
+- Priority: Add one of the following sets of special characters before and after the task:
+    - High (3) priority tasks look like `- **my task +tag1 +tag2**`
+    - Medium (2) priority tasks look like `- my task +tag1 +tag2`
+    - Low (1) priority tasks look like `- (my task +tag1 +tag2)`
+    - None (0) priority tasks look like `- ~~my task +tag1 +tag2~~`
+- Description: As explained above, any lines following the task that start with `    ` (which is 4 spaces) will add a line to the description of a task. The initial 4 spaces will be left out of the description. Any number of description lines are acceptable. Empty description lines must contain the 4 spaces in the markdown file.
+
+Please note that **when editing the markdown file manually, any text that does not conform to the description above will be DELETED upon saving the file again with Panban.**
+
 ## Task Attributes
 
 Every task (sometimes called `item` or `node`) has the following attributes:
