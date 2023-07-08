@@ -12,7 +12,7 @@ from panban.json_api import exceptions
 
 TAG_PATTERN = r' #([^ ]+)'
 TAG_FORMAT = ' #{tag}'
-TAG_FORMAT_LABEL = '{label} #{tags}'
+TAG_FORMAT_LABEL = '{label}{tags}'
 PRIO_PATTERN = r'^(\(|~~|\*\*)(.*)(\)|~~|\*\*)$'
 PRIO_DECORATORS = {
     0: ('~~', '~~'),
@@ -79,6 +79,34 @@ class Handler(panban.api.Handler):
         node.prio = query.arguments['prio']
 
         self.dump_markdown(nodes_by_id, filename)
+        return self.response()
+
+    def cmd_changetags(self, query):
+        filename = query.source
+        nodes_by_id = self.load_markdown(filename)
+
+        node = nodes_by_id[query.arguments['item_id']]
+
+        old_value = list(node.tags)
+        new_value = list(old_value)
+        target_tags = query.arguments['tags']
+        action = query.arguments['action']
+
+        if action == self.json_api.PARAM_TAG_ADD:
+            for tag in target_tags:
+                if tag not in new_value:
+                    new_value.append(tag)
+        elif action == self.json_api.PARAM_TAG_REMOVE:
+            for tag in target_tags:
+                if tag in new_value:
+                    new_value.remove(tag)
+        elif action == self.json_api.PARAM_TAG_CLEAR:
+            new_value = []
+
+        if old_value != new_value:
+            node.tags = new_value
+            self.dump_markdown(nodes_by_id, filename)
+
         return self.response()
 
     def cmd_addnode(self, query):
@@ -160,11 +188,7 @@ class Handler(panban.api.Handler):
 
     def extract_tags(self, label):
         pattern = re.compile(TAG_PATTERN)
-        match = pattern.search(label)
-        if match:
-            tags = match.groups()
-        else:
-            tags = []
+        tags = pattern.findall(label)
         label = pattern.sub('', label)  # Remove tags
         return label, tags
 
@@ -208,9 +232,15 @@ class Handler(panban.api.Handler):
     def _format_line(self, entry):
         if entry.prio != DEFAULT_PRIO:
             left, right = PRIO_DECORATORS[entry.prio]
-            return f"- {left}{entry.label}{right}"
+            label = f"{left}{entry.label}{right}"
         else:
-            return f"- {entry.label}"
+            label = entry.label
+
+        if entry.tags:
+            tags = "".join(TAG_FORMAT.format(tag=tag) for tag in entry.tags)
+            label = TAG_FORMAT_LABEL.format(label=label, tags=tags)
+
+        return f"- {label}"
 
     def handle(self, query):
         command = query.command
@@ -224,6 +254,8 @@ class Handler(panban.api.Handler):
             response = self.cmd_changelabel(query)
         elif command == 'change_prio':
             response = self.cmd_changeprio(query)
+        elif command == 'change_tags':
+            response = self.cmd_changetags(query)
         elif command == 'add_node':
             response = self.cmd_addnode(query)
         else:
