@@ -206,9 +206,11 @@ class Handler(panban.api.Handler):
                 else:
                     prio = DEFAULT_PRIO
 
+                # Extract tags
+                label, tags = self.extract_tags(label)
+
                 if label and parent:
                     pos = len(parent.children)
-                    label, tags = self.extract_tags(label)
                     entry = self.make_node(label, parent, pos, tags, prio)
                     parent.children.append(entry.id)
                     nodes_by_id[entry.id] = entry
@@ -270,15 +272,15 @@ class Handler(panban.api.Handler):
             f.write(finalized_content)
 
     def _format_line(self, entry):
-        if entry.prio != DEFAULT_PRIO:
-            left, right = PRIO_DECORATORS[entry.prio]
-            label = f"{left}{entry.label}{right}"
-        else:
-            label = entry.label
+        label = entry.label
 
         if entry.tags:
             tags = "".join(TAG_FORMAT.format(tag=tag) for tag in entry.tags)
             label = TAG_FORMAT_LABEL.format(label=label, tags=tags)
+
+        if entry.prio != DEFAULT_PRIO:
+            left, right = PRIO_DECORATORS[entry.prio]
+            label = f"{left}{label}{right}"
 
         return f"- {label}"
 
