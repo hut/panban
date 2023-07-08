@@ -8,6 +8,7 @@ Some things are implemented in a hacky way and are not obvious:
 
 - You can customize the order of tags in the tag list by assigning tag priorities through the special task "Tag Priorities" (see [HOWTO](HOWTO.md))
 - You can highlight a task visually by assigning the special tag "important"
+- You can hide links in your task label by using markdown-style links like `Check out [Codeberg](https://codeberg.org)`. The visible text will be `Check out Codeberg`, but you can still use the `o` key to open the link `https://codeberg.org` in your Browser.
 
 ## Markdown Format Specification
 
