@@ -54,7 +54,7 @@ Every task (sometimes called `item` or `node`) has the following attributes:
 ## JSON API
 ### Commands
 
-To interact with the backend, the frontend doesn't directly call a backend's python function, but rather sends commands to the backend module via a JSON API. Every command is a JSON dictionary consisting of the following parameters:
+To interact with the backend, the frontend doesn't directly call a backend's python functions, but rather sends commands to the backend module via a JSON API. Every command is a JSON dictionary consisting of the following parameters:
 
 - `command`: A string defining the name of the command (see below)
 - `version`: A string defining the JSON API version that the backend should use in the response
