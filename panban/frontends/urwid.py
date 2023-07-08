@@ -244,7 +244,7 @@ class UI(object):
     def user_choice_filtertag(self, exit_key=None):
         all_tags = list(self.db.all_tags)
         all_tags.sort()
-        all_tags.sort(key=lambda tag: -self.tag_priorities.get(tag, 0))
+        all_tags.sort(key=lambda tag: -self.tag_priorities.get(tag, DEFAULT_PRIO))
         options = [CHOICE_ALL_TAGS] + all_tags
         styles = [None]
         for tag in all_tags:
@@ -271,7 +271,7 @@ class UI(object):
     def user_choice_addtag(self, node, exit_key=None):
         possible_new_tags = list(set(self.db.all_tags) - set(node.tags))
         possible_new_tags.sort()
-        possible_new_tags.sort(key=lambda tag: -self.tag_priorities.get(tag, 0))
+        possible_new_tags.sort(key=lambda tag: -self.tag_priorities.get(tag, DEFAULT_PRIO))
         options = [CHOICE_ABORT] + possible_new_tags + [CHOICE_NEW_TAG]
         self.user_choice(
             options=options,
