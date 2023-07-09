@@ -23,14 +23,15 @@ consistent UI.  Currently supported data formats are:
 | p          | edit task priority                                               |
 | 1-9        | move task to column N                                            |
 | +/-        | add/remove tags                                                  |
+| A          | add new task                                                     |
+| X          | delete task                                                      |
+| R          | reload tasks                                                     |
 | z          | toggle visibility of task description                            |
 | Z          | toggle visibility of metadata                                    |
 | /          | filter entries by regex                                          |
 | q          | filter entries by tag                                            |
+| `ESC`      | reset filtering                                                  |
 | o          | open first URL in task description in Firefox                    |
-| A          | add new task                                                     |
-| X          | delete task                                                      |
-| R          | reload tasks                                                     |
 | B          | Experimental: Edit task description as markdown panban sub-board |
 | `TAB`      | select the database source, if you opened multiple databases     |
 | Q          | quit                                                             |
