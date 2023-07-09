@@ -622,9 +622,6 @@ class Base(urwid.WidgetPlaceholder):
                 # The second ESC press resets the tag filter
                 self.ui.filter_tag = None
                 self.ui.rebuild()
-            elif self.ui.db != self.ui.dbs[self.ui.source_uris[0]]:
-                # The third ESC press goes back to the initial (first) source_uri
-                self.ui.change_db(self.ui.source_uris[0])
         elif key == 'y':
             self.ui.deactivate()
             self.ui.db.sync()
