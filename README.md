@@ -38,10 +38,6 @@ consistent UI.  Currently supported data formats are:
 | `S-TAB`    | previous database source                                         |
 | Q          | quit                                                             |
 
-As of 2019-04-22, it is necessary to reload after certain operations to ensure
-that the program doesn't crash.  To be on the safe side, just reload the data
-with `R` after every operation.
-
 # How to run
 
 First download panban and install the dependencies:
