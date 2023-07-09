@@ -10,7 +10,7 @@ Panban can open and edit todo.txt files but is not feature complete yet.
 Try this command from the root directory of this git repository:
 
 ```
-./panban.py -b todotxt demos/todotxt/todo.txt
+./panban.py demos/todotxt/todo.txt
 ```
 
 ![Screenshot of Panban viewing the todo.txt file in this folder](screenshot_todotxt.png)

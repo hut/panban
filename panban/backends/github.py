@@ -5,6 +5,8 @@ from panban.json_api.eternal import PortableResponse, PortableNode
 from panban.json_api import exceptions
 import urllib.request
 
+URI_START = 'https://github.com/'
+
 class Handler(panban.api.Handler):
     def response(self, data=None, status=None):
         if status is None:
@@ -22,7 +24,9 @@ class Handler(panban.api.Handler):
         return self.response(self.nodes_by_id)
 
     def load_data(self, source):
-        owner, repo = source.split('/', 1)
+        if not source.startswith(URI_START):
+            raise Exception(f"Source URI must start with {URI_START}")
+        owner, repo = source[len(URI_START):].split('/', 1)
         req = urllib.request.Request('https://api.github.com/repos/{owner}/{repo}/issues?per_page=10000&state=all'.format(owner=owner, repo=repo))
         response = urllib.request.urlopen(req).read()
         decoded = json.loads(response.decode('utf-8'))

@@ -7,7 +7,7 @@ This backend is also read-only.
 Try this command from the root directory of this git repository:
 
 ```
-./panban.py -b github ranger/ranger
+./panban.py https://github.com/ranger/ranger
 ```
 
 ![Screenshot of Panban viewing the GitHub issues of https://github.com/ranger/ranger](screenshot_github.png)

@@ -7,7 +7,7 @@ The task files need to be accessible via the file system, so in order to access 
 Try this command from the root directory of this git repository:
 
 ```
-./panban.py -b caldav demos/caldav
+./panban.py demos/caldav
 ```
 
 Here is an example screenshot of actual panban use during panban development:

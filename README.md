@@ -32,6 +32,7 @@ consistent UI.  Currently supported data formats are:
 | X          | delete task                                                      |
 | R          | reload tasks                                                     |
 | B          | Experimental: Edit task description as markdown panban sub-board |
+| `TAB`      | select the database source, if you opened multiple databases     |
 | Q          | quit                                                             |
 
 As of 2019-04-22, it is necessary to reload after certain operations to ensure
@@ -54,13 +55,15 @@ Then you can try out the desired backend with the provided demo database.
 
 KEEP A BACKUP OF YOUR DATABASE. PANBAN IS STILL A WORK IN PROGRESS AND MAY CAUSE DATA LOSS
 
-- `./panban.py -b todotxt demos/todotxt/todo.txt`
-- `./panban.py -b markdown demos/markdown/markdown.md`
-- `./panban.py -b caldav demos/caldav`
+- `./panban.py demos/todotxt/todo.txt`
+- `./panban.py demos/markdown/markdown.md`
+- `./panban.py demos/caldav`
+
+The format is automatically detected based on the file extension or URI.
 
 You can also use this to view github issues (read-only):
 
-- `./panban.py -b github ranger/ranger`
+- `./panban.py https://github.com/ranger/ranger`
 
 ![screenshot of github issues](demos/github/screenshot_github.png)
 

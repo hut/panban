@@ -10,7 +10,7 @@ As of 2023-04-22, this backend is not very stable and will e.g. remove any data 
 Try this command from the root directory of this git repository:
 
 ```
-./panban.py -b markdown demos/markdown/markdown.md
+./panban.py demos/markdown/markdown.md
 ```
 
 ![Screenshot of Panban the Markdown file in this folder](screenshot_markdown.png)
