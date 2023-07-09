@@ -66,6 +66,12 @@ You can also use this to view github issues (read-only):
 
 ![screenshot of github issues](demos/github/screenshot_github.png)
 
+# More Documentation
+
+- [How-Tos](HOWTO.md)
+- [Reference](REFERENCE.md)
+- [Examples](demos)
+
 # License
 
 Copyright (C) 2023  Roman Zimbelmann
