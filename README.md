@@ -9,9 +9,9 @@ allows you to view various kinds of structured data as a kanban board, with a
 consistent UI.  Currently supported data formats are:
 
 - [Markdown lists](demos/markdown/README.md) (read+write)
-- [todo.txt](demos/todotxt/README.md) (read+write)
-- [GitHub issues](demos/github/README.md) (read only)
 - [CalDav VTODO Tasks](demos/caldav/README.md), synced via e.g. [vdirsyncer](https://github.com/pimutils/vdirsyncer) (read+write)
+- [todo.txt](demos/todotxt/README.md) (read+write, limited functionality)
+- [GitHub issues](demos/github/README.md) (read only)
 
 # Key bindings
 
