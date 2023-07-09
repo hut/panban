@@ -33,7 +33,9 @@ consistent UI.  Currently supported data formats are:
 | `ESC`      | reset filtering                                                  |
 | o          | open first URL in task description in Firefox                    |
 | B          | Experimental: Edit task description as markdown panban sub-board |
-| `TAB`      | select the database source, if you opened multiple databases     |
+| s          | select the database source, if you opened multiple databases     |
+| `TAB`      | next database source                                             |
+| `S-TAB`    | previous database source                                         |
 | Q          | quit                                                             |
 
 As of 2019-04-22, it is necessary to reload after certain operations to ensure

@@ -155,6 +155,13 @@ class UI(object):
         self.db.reload()
         self.rebuild()
 
+    def rotate_db(self, offset):
+        if len(self.dbs) > 1:
+            dbs_list = list(self.dbs)
+            db_id = dbs_list.index(self.db_uri)
+            new_id = (db_id + offset) % len(dbs_list)
+            self.change_db(dbs_list[new_id])
+
     def activate(self):
         if self.loop is None:
             self.hide_cursor()
@@ -605,8 +612,12 @@ class Base(urwid.WidgetPlaceholder):
         key = super().keypress(size, key)
         if key == 'q':
             self.ui.user_choice_filtertag()
+        elif key == 's':
+            self.ui.user_choice_source(exit_key='s')
         elif key == 'tab':
-            self.ui.user_choice_source(exit_key='tab')
+            self.ui.rotate_db(1)
+        elif key == 'shift tab':
+            self.ui.rotate_db(-1)
         elif key == 'Q':
             raise urwid.ExitMainLoop()
         elif key == 'R':
