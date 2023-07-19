@@ -4,6 +4,9 @@
 
 **⚠️ This project is in the alpha stage, expect data loss ⚠️**
 
+- "pan-": Greek for "all-encompassing"
+- "-ban": Japanese for "board"
+
 A modular kanban tool with swappable front-ends and database interfaces.  It
 allows you to view various kinds of structured data as a kanban board, with a
 consistent UI.  Currently supported data formats are:
