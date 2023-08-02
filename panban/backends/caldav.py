@@ -158,19 +158,20 @@ class Handler(panban.api.Handler):
         # Infer metadata from column
         column_id = query.arguments['target_column']
         column = self.nodes_by_id[column_id]
-        extra_tags = []
+        tags = list(query.arguments['tags'])
         if column.label == COL_LABEL_TODO:
             vtodo['status'] = VTODO_STATUS_TODO
         elif column.label == COL_LABEL_NEXT:
             vtodo['status'] = VTODO_STATUS_TODO
-            extra_tags = [TAG_NEXT]
+            if TAG_NEXT not in tags:
+                tags.append(TAG_NEXT)
         elif column.label in (COL_LABEL_TODAY, COL_LABEL_DONE):
             vtodo['status'] = VTODO_STATUS_TODO
             vtodo['due'] = icalendar.vDatetime(datetime.datetime.now())
 
         # Set tag
-        if query.arguments['tags']:
-            vtodo['categories'] = icalendar.prop.vCategory(list(query.arguments['tags']) + extra_tags)
+        if tags:
+            vtodo['categories'] = icalendar.prop.vCategory(tags)
 
         node = self.make_node(
             uid=uid,
