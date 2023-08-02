@@ -158,7 +158,7 @@ class Handler(panban.api.Handler):
         # Infer metadata from column
         column_id = query.arguments['target_column']
         column = self.nodes_by_id[column_id]
-        tags = list(query.arguments['tags'])
+        tags = list(query.arguments.get('tags', []))
         if column.label == COL_LABEL_TODO:
             vtodo['status'] = VTODO_STATUS_TODO
         elif column.label == COL_LABEL_NEXT:
