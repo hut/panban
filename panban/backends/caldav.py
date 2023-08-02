@@ -303,7 +303,10 @@ class Handler(panban.api.Handler):
                     if vtodo not in dirty: dirty.append(vtodo)
                 if TAG_NEXT in tags:
                     tags.remove(TAG_NEXT)
-                    vtodo['categories'] = icalendar.prop.vCategory(tags)
+                    if len(tags) == 0:
+                        del vtodo['categories']
+                    else:
+                        vtodo['categories'] = icalendar.prop.vCategory(tags)
                     if vtodo not in dirty: dirty.append(vtodo)
 
         for vtodo in dirty:
