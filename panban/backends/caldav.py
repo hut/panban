@@ -8,19 +8,24 @@ from panban.json_api import exceptions
 from panban.json_api.eternal import PortableResponse, PortableNode, DEFAULT_PRIO
 
 COL_TODO = '__todo'
+COL_NEXT = '__next'
 COL_TODAY = '__today'
 COL_DONE = '__done'
 COL_LABEL_TODO = 'Todo'
+COL_LABEL_NEXT = 'Next'
 COL_LABEL_TODAY = 'Active'
 COL_LABEL_DONE = 'DONE'
 COL_ID_TODO = 0
-COL_ID_TODAY = 1
-COL_ID_DONE = 2
+COL_ID_NEXT = 1
+COL_ID_TODAY = 2
+COL_ID_DONE = 3
 
 SHOW_COMPLETED_ITEMS_FOR_DAYS = 14
 
 CATEGORY_PREFIX = '__category_'
 ROOT_CATEGORY = '__all'
+
+TAG_NEXT = 'next'  # items tagged with this tag will show up in the "Next" column
 
 VTODO_STATUS_TODO = 'NEEDS-ACTION'
 VTODO_STATUS_DONE = 'COMPLETED'
@@ -153,15 +158,19 @@ class Handler(panban.api.Handler):
         # Infer metadata from column
         column_id = query.arguments['target_column']
         column = self.nodes_by_id[column_id]
+        extra_tags = []
         if column.label == COL_LABEL_TODO:
             vtodo['status'] = VTODO_STATUS_TODO
+        elif column.label == COL_LABEL_NEXT:
+            vtodo['status'] = VTODO_STATUS_TODO
+            extra_tags = [TAG_NEXT]
         elif column.label in (COL_LABEL_TODAY, COL_LABEL_DONE):
             vtodo['status'] = VTODO_STATUS_TODO
             vtodo['due'] = icalendar.vDatetime(datetime.datetime.now())
 
         # Set tag
         if query.arguments['tags']:
-            vtodo['categories'] = icalendar.prop.vCategory(query.arguments['tags'])
+            vtodo['categories'] = icalendar.prop.vCategory(list(query.arguments['tags']) + extra_tags)
 
         node = self.make_node(
             uid=uid,
@@ -193,10 +202,12 @@ class Handler(panban.api.Handler):
         import icalendar
         ids = query.arguments['item_ids']
         dirty = []
-        
+
         # Check whether we need to do any changes
         for uid in query.arguments['item_ids']:
             vtodo = self.vtodos_by_id[uid]
+            tags = self._extract_tags(vtodo)
+
             if query.arguments['target_column'].endswith(COL_DONE):
                 if str(vtodo.get('status', '')) != VTODO_STATUS_DONE:
                     dirty.append(vtodo)
@@ -205,10 +216,19 @@ class Handler(panban.api.Handler):
                     dirty.append(vtodo)
                 if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
                     dirty.append(vtodo)
+            elif query.arguments['target_column'].endswith(COL_NEXT):
+                if self._is_due_today(vtodo):
+                    dirty.append(vtodo)
+                if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
+                    dirty.append(vtodo)
+                if 'next' not in tags:
+                    dirty.append(vtodo)
             else:
                 if self._is_due_today(vtodo):
                     dirty.append(vtodo)
                 if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
+                    dirty.append(vtodo)
+                if 'next' in tags:
                     dirty.append(vtodo)
 
         if not dirty:
@@ -223,6 +243,8 @@ class Handler(panban.api.Handler):
         now = icalendar.vDatetime(datetime.datetime.now())
         for uid in query.arguments['item_ids']:
             vtodo = self.vtodos_by_id[uid]
+            tags = self._extract_tags(vtodo)
+
             if query.arguments['target_column'].endswith(COL_DONE):
                 # Requirements for it to show up in the "Done" column:
                 # - Task completed
@@ -246,10 +268,11 @@ class Handler(panban.api.Handler):
                         del vtodo['completed']
                     if vtodo not in dirty: dirty.append(vtodo)
 
-            else:
-                # Requirements for it to show up in the "Todo" column:
+            elif query.arguments['target_column'].endswith(COL_NEXT):
+                # Requirements for it to show up in the "Next" column:
                 # - No due date or due date later than tomorrow
                 # - Not completed yet
+                # - Has the tag specified in the constant "TAG_NEXT"
                 # Make sure that these requirements are met:
                 if self._is_due_today(vtodo):
                     del vtodo['due']
@@ -258,6 +281,28 @@ class Handler(panban.api.Handler):
                     vtodo['status'] = VTODO_STATUS_TODO
                     if 'completed' in vtodo:
                         del vtodo['completed']
+                    if vtodo not in dirty: dirty.append(vtodo)
+                if TAG_NEXT not in tags:
+                    tags.append(TAG_NEXT)
+                    vtodo['categories'] = icalendar.prop.vCategory(tags)
+                    if vtodo not in dirty: dirty.append(vtodo)
+            else:
+                # Requirements for it to show up in the "Todo" column:
+                # - No due date or due date later than tomorrow
+                # - Not completed yet
+                # - Does NOT have the tag specified in the constant "TAG_NEXT"
+                # Make sure that these requirements are met:
+                if self._is_due_today(vtodo):
+                    del vtodo['due']
+                    if vtodo not in dirty: dirty.append(vtodo)
+                if str(vtodo.get('status', '')) != VTODO_STATUS_TODO:
+                    vtodo['status'] = VTODO_STATUS_TODO
+                    if 'completed' in vtodo:
+                        del vtodo['completed']
+                    if vtodo not in dirty: dirty.append(vtodo)
+                if TAG_NEXT in tags:
+                    tags.remove(TAG_NEXT)
+                    vtodo['categories'] = icalendar.prop.vCategory(tags)
                     if vtodo not in dirty: dirty.append(vtodo)
 
         for vtodo in dirty:
@@ -302,6 +347,15 @@ class Handler(panban.api.Handler):
             )
             self.nodes_by_id[column_todo.id] = column_todo
             category_node.children.append(column_todo.id)
+
+            column_next = self.make_node(
+                uid=category_uid + COL_NEXT,
+                label=COL_LABEL_NEXT,
+                parent=category_uid,
+                pos=0,
+            )
+            self.nodes_by_id[column_next.id] = column_next
+            category_node.children.append(column_next.id)
 
             column_today = self.make_node(
                 uid=category_uid + COL_TODAY,
@@ -349,6 +403,8 @@ class Handler(panban.api.Handler):
                         continue
             elif self._is_due_today(vtodo):
                 column_index = COL_ID_TODAY
+            elif TAG_NEXT in self._extract_tags(vtodo):
+                column_index = COL_ID_NEXT
             else:
                 column_index = COL_ID_TODO
 
@@ -411,6 +467,11 @@ class Handler(panban.api.Handler):
                 return
         uid = str(vtodo['uid'])
         return uid, vtodo
+
+    def _extract_tags(self, vtodo):
+        if 'categories' in vtodo:
+            return [str(cat) for cat in vtodo['categories'].cats]
+        return []
 
     def _write_vtodo(self, vtodo, create=False):
         import icalendar
