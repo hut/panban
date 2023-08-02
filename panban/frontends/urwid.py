@@ -88,6 +88,7 @@ class UI(object):
         self.initial_tab = initial_tab
         self.filter_regex = None
         self.filter_tag = None
+        self.hide_left_column = False
         self.use_titlebar = use_titlebar
 
         self.theme = DEFAULT_THEME
@@ -739,7 +740,10 @@ class KanbanLayout(urwid.Columns):
             focus = None
 
         columnboxes = []
-        for column in self.get_column_nodes():
+        for i, column in enumerate(self.get_column_nodes()):
+            if i == 0 and self.ui.hide_left_column:
+                continue
+
             # TODO: don't re-create ColumnBoxes on each reload
             columnbox = ColumnBox(self.ui, column)
             columnbox.reload()
@@ -766,6 +770,9 @@ class KanbanLayout(urwid.Columns):
             self.ui.rebuild()
         elif key == 'Z':
             self.hide_metadata ^= True
+            self.ui.rebuild()
+        elif key == '`':
+            self.ui.hide_left_column ^= True
             self.ui.rebuild()
         else:
             return key

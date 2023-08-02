@@ -29,6 +29,7 @@ consistent UI.  Currently supported data formats are:
 | A          | add new task                                                     |
 | X          | delete task                                                      |
 | R          | reload tasks                                                     |
+| `          | toggle visibility of the leftmost column                         |
 | z          | toggle visibility of task description                            |
 | Z          | toggle visibility of metadata                                    |
 | /          | filter entries by regex                                          |
