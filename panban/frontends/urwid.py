@@ -212,15 +212,17 @@ class UI(object):
         if backend == 'markdown':
             if string.count('#') < 2:
                 return
+        else:
+            raise Exception("edit_in_panban supports only markdown backend for now")
 
         # Write temporary file
-        tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
+        tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False)
         filename = tmp.name
         tmp.write(string)
         tmp.close()
 
         # Call a sub-panban
-        self.system(['panban', '--backend', backend, filename])
+        self.system(['panban', filename])
 
         # Read temporary file for changes & delete it
         with open(filename, 'r') as f:
